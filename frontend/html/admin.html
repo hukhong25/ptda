@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="../css/admin.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <div class="logo">Admin Dashboard</div>
+      <div class="header-right">
+        <span id="adminName">Admin</span>
+        <button id="logoutBtn">Đăng xuất</button>
+      </div>
+    </header>
+
+    <div class="sidebar">
+      <ul>
+        <li data-tab="users" class="active">Quản lý tài khoản</li>
+        <li data-tab="categories">Quản lý danh mục</li>
+        <li data-tab="products">Quản lý sản phẩm</li>
+      </ul>
+    </div>
+
+    <div class="content">
+      <!-- Quản lý tài khoản -->
+      <div class="tab-content" id="users">
+        <h2>Danh sách người dùng</h2>
+        <table id="userTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Quản lý danh mục -->
+      <div class="tab-content" id="categories" style="display: none">
+        <h2>Danh sách danh mục</h2>
+        <button
+          id="addCategoryBtn"
+          style="
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          ➕ Thêm danh mục
+        </button>
+        <table id="categoryTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên danh mục</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Quản lý sản phẩm -->
+      <div class="tab-content" id="products" style="display: none">
+        <h2>Danh sách sản phẩm</h2>
+        <button
+          id="addProductBtn"
+          style="
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          ➕ Thêm sản phẩm
+        </button>
+        <table id="productTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên</th>
+              <th>Giá</th>
+              <th>Danh mục</th>
+              <th>Hình ảnh</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa danh mục -->
+    <div id="categoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeCategoryModal">&times;</span>
+        <h3 id="categoryModalTitle">Thêm danh mục</h3>
+        <form id="categoryForm">
+          <label>Tên danh mục *</label>
+          <input
+            type="text"
+            id="categoryName"
+            placeholder="Nhập tên danh mục"
+            required
+          />
+
+          <button type="submit" style="background: #4caf50">💾 Lưu</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa sản phẩm -->
+    <div id="productModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle">Thêm sản phẩm</h3>
+        <form id="productForm">
+          <label>Tên sản phẩm *</label>
+          <input
+            type="text"
+            id="productName"
+            placeholder="Nhập tên sản phẩm"
+            required
+          />
+
+          <label>Giá sản phẩm (VND) *</label>
+          <input
+            type="number"
+            id="productPrice"
+            placeholder="Nhập giá"
+            min="0"
+            required
+          />
+
+          <label>Danh mục</label>
+          <div
+            id="productCategoriesContainer"
+            style="
+              margin: 10px 0;
+              border: 1px solid #ccc;
+              padding: 10px;
+              border-radius: 5px;
+              min-height: 100px;
+            "
+          >
+            <!-- Checkbox sẽ được load từ JS -->
+          </div>
+          <small style="color: #666; font-size: 12px">
+            ⓘ Chọn một hoặc nhiều danh mục
+          </small>
+          <label>Mô tả</label>
+          <textarea
+            id="productDesc"
+            placeholder="Nhập mô tả sản phẩm"
+            rows="3"
+            style="
+              width: 100%;
+              padding: 10px;
+              margin: 10px 0;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+              resize: vertical;
+            "
+          ></textarea>
+
+          <label>Số lượng</label>
+          <input
+            type="number"
+            id="productStock"
+            placeholder="Nhập số lượng"
+            min="0"
+            value="0"
+          />
+
+          <label>Hình ảnh</label>
+          <div id="currentImage" style="display: none"></div>
+          <input
+            type="file"
+            id="productImage"
+            accept="image/*"
+            style="margin-bottom: 10px"
+          />
+
+          <button type="submit" style="background: #4caf50">💾 Lưu</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Import 3 file JS riêng biệt -->
+    <script src="../js/userManage.js"></script>
+    <script src="../js/categoryManage.js"></script>
+    <script src="../js/productManage.js"></script>
+  </body>
+</html>

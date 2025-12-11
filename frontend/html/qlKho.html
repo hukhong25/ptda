@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý kho</title>
+    <link rel="stylesheet" href="../css/kho.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="admin-header">
+      <div class="logo">Quản lý kho</div>
+      <div class="header-right">
+        <button id="logoutBtn">Đăng xuất</button>
+      </div>
+    </header>
+
+    <!-- SIDEBAR (nếu muốn) -->
+    <div class="sidebar">
+      <ul>
+        <li class="active" data-tab="tabKho">Kho hàng</li>
+        <!-- Thêm tab khác nếu cần -->
+      </ul>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div id="tabKho" class="tab-content">
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="Tìm sản phẩm..." />
+          <button id="searchBtn">Tìm</button>
+        </div>
+
+        <table id="khoTable">
+          <thead>
+            <tr>
+              <th>Mã SP</th>
+              <th>Ảnh</th>
+              <th>Tên sản phẩm</th>
+              <th>Số lượng tồn</th>
+              <th>Sửa</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal chỉnh sửa -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <h3>Cập nhật số lượng</h3>
+        <input type="number" id="editQty" placeholder="Số lượng" />
+        <button id="saveEditBtn">Lưu</button>
+      </div>
+    </div>
+
+    <script src="../js/kho.js"></script>
+  </body>
+</html>

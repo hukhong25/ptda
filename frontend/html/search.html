@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kết quả tìm kiếm</title>
+    <link rel="stylesheet" href="../css/search.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo" id="logo">MyShop</div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+        <button id="searchBtn">Tìm</button>
+      </div>
+
+      <div class="header-right">
+        <button id="loginBtn">Đăng nhập</button>
+        <button id="registerBtn">Đăng ký</button>
+
+        <div class="user-menu" id="userMenu">
+          <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
+          <span id="userName">User</span>
+          <div class="dropdown" id="dropdownMenu">
+            <a href="/html/profile.html">Thông tin cá nhân</a>
+            <a href="/html/orders.html">Đơn hàng</a>
+            <a id="logoutBtn">Đăng xuất</a>
+          </div>
+        </div>
+
+        <div class="cart-icon" id="cartBtn">
+          🛒 <span id="cartCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- NỘI DUNG KẾT QUẢ -->
+    <main class="container">
+      <h1 id="searchTitle"></h1>
+      <div id="searchResults" class="product-list"></div>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <div class="footer-col">
+          <h3>Về chúng tôi</h3>
+          <p>Chuyên cung cấp quần áo thời trang chất lượng cao cho giới trẻ.</p>
+        </div>
+        <div class="copyright">
+          <p>&copy; 2025 FashionStore. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../js/search.js"></script>
+    <script src="../js/Header.js"></script>
+
+  </body>
+</html>

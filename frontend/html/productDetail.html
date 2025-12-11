@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="../css/productDetail.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo" id="logo">MyShop</div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+        <button id="searchBtn">Tìm</button>
+      </div>
+
+      <div class="header-right">
+        <button id="loginBtn">Đăng nhập</button>
+        <button id="registerBtn">Đăng ký</button>
+
+        <div class="user-menu" id="userMenu">
+          <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
+          <span id="userName">User</span>
+          <div class="dropdown" id="dropdownMenu">
+            <a href="/html/profile.html">Thông tin cá nhân</a>
+            <a href="/html/orders.html">Đơn hàng</a>
+            <a id="logoutBtn">Đăng xuất</a>
+          </div>
+        </div>
+
+        <div class="cart-icon" id="cartBtn">
+          🛒 <span id="cartCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- PRODUCT DETAIL -->
+    <main class="container">
+      <div class="product-detail">
+        <div class="product-image">
+          <img id="productImage" src="/Asset/no-image.jpg" alt="Product" />
+        </div>
+        <div class="product-info">
+          <h2 id="productName">Tên sản phẩm</h2>
+          <p class="price" id="productPrice">0 VND</p>
+          <div id="productDesc">Mô tả sản phẩm</div>
+
+          <div class="quantity-control">
+            <button id="btnMinus">-</button>
+            <input type="number" id="quantity" value="1" min="1" />
+            <button id="btnPlus">+</button>
+          </div>
+
+          <div class="action-buttons">
+            <button id="addToCartBtn" class="btn">Thêm vào giỏ</button>
+            <button id="buyNowBtn" class="btn buy-now">Mua ngay</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <div class="footer-col">
+          <h3>Về chúng tôi</h3>
+          <p>Chuyên cung cấp quần áo thời trang chất lượng cao cho giới trẻ.</p>
+        </div>
+        <div class="copyright">
+          <p>&copy; 2025 FashionStore. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../js/productDetail.js"></script>
+    <script src="../js/home.js"></script>
+    <script src="../js/Header.js"></script>
+
+    <!-- để header hoạt động -->
+  </body>
+</html>
