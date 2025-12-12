@@ -4,9 +4,38 @@
     <meta charset="UTF-8" />
     <title>Quản lý kho</title>
     <link rel="stylesheet" href="../css/kho.css" />
+    <style>
+      /* CSS bổ sung cho giao diện mới */
+      .size-badge {
+        display: inline-block;
+        background: #e0e0e0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+        margin-right: 4px;
+        margin-bottom: 2px;
+      }
+      .input-group-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+      }
+      .input-group-row label {
+        font-weight: bold;
+        flex: 1;
+      }
+      .input-group-row input {
+        width: 100px;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+    </style>
   </head>
   <body>
-    <!-- HEADER -->
     <header class="admin-header">
       <div class="logo">Quản lý kho</div>
       <div class="header-right">
@@ -14,19 +43,16 @@
       </div>
     </header>
 
-    <!-- SIDEBAR (nếu muốn) -->
     <div class="sidebar">
       <ul>
         <li class="active" data-tab="tabKho">Kho hàng</li>
-        <!-- Thêm tab khác nếu cần -->
       </ul>
     </div>
 
-    <!-- CONTENT -->
     <div class="content">
       <div id="tabKho" class="tab-content">
         <div class="search-box">
-          <input id="searchInput" type="text" placeholder="Tìm sản phẩm..." />
+          <input id="searchInput" type="text" placeholder="Tìm tên sản phẩm..." />
           <button id="searchBtn">Tìm</button>
         </div>
 
@@ -36,22 +62,27 @@
               <th>Mã SP</th>
               <th>Ảnh</th>
               <th>Tên sản phẩm</th>
-              <th>Số lượng tồn</th>
-              <th>Sửa</th>
+              <th>Tổng tồn kho</th>
+              <th>Chi tiết Size</th> <th>Hành động</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Modal chỉnh sửa -->
     <div id="editModal" class="modal">
-      <div class="modal-content">
+      <div class="modal-content" style="max-width: 400px;">
         <span id="closeModal" class="close">&times;</span>
-        <h3>Cập nhật số lượng</h3>
-        <input type="number" id="editQty" placeholder="Số lượng" />
-        <button id="saveEditBtn">Lưu</button>
+        <h3 id="modalTitle">Cập nhật kho</h3>
+        
+        <div id="sizeInputsContainer" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        </div>
+
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="saveEditBtn" class="btn-primary">Lưu thay đổi</button>
+        </div>
       </div>
     </div>
 

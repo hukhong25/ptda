@@ -1,29 +1,30 @@
 import db from "../config/db.js";
 
 const Product = {
-  // Lấy tất cả sản phẩm (Bỏ soLuong)
   getAll: (callback) => {
-    const sql = "SELECT * FROM SanPham ORDER BY maSP DESC";
+    const sql = `
+      SELECT p.*, 
+             COALESCE(SUM(ct.soLuongTon), 0) AS tongSoLuong
+      FROM SanPham p
+      LEFT JOIN ChiTietSanPham ct ON p.maSP = ct.maSP
+      GROUP BY p.maSP, p.tenSP, p.gia, p.moTa, p.anhSP
+      ORDER BY p.maSP DESC
+    `;
     db.query(sql, callback);
   },
 
-  // Lấy sản phẩm theo ID (Kèm thông tin Size và Số lượng tồn)
   getById: (id, callback) => {
     const sql = `
-      SELECT p.*, 
-             JSON_ARRAYAGG(
-               JSON_OBJECT('maSize', s.maSize, 'tenSize', s.tenSize, 'soLuongTon', ct.soLuongTon)
-             ) as sizes
+      SELECT p.*, s.maSize, s.tenSize, ct.soLuongTon
       FROM SanPham p
       LEFT JOIN ChiTietSanPham ct ON p.maSP = ct.maSP
       LEFT JOIN Size s ON ct.maSize = s.maSize
       WHERE p.maSP = ?
-      GROUP BY p.maSP
     `;
     db.query(sql, [id], callback);
   },
 
-  // Thêm sản phẩm mới (Bỏ soLuong)
+  // Thêm sản phẩm mới
   create: (product, callback) => {
     const sql = "INSERT INTO SanPham (tenSP, gia, moTa, anhSP) VALUES (?, ?, ?, ?)";
     db.query(sql, [
@@ -34,11 +35,9 @@ const Product = {
     ], callback);
   },
 
-  // Khởi tạo kho cho sản phẩm (Thêm size vào bảng ChiTietSanPham)
+  // Khởi tạo kho
   initInventory: (maSP, sizesData, callback) => {
-    // sizesData là mảng các object [{maSize: 1, soLuongTon: 10}, ...]
     if (!sizesData || sizesData.length === 0) return callback(null);
-    
     const values = sizesData.map(s => [maSP, s.maSize, s.soLuongTon]);
     const sql = "INSERT INTO ChiTietSanPham (maSP, maSize, soLuongTon) VALUES ?";
     db.query(sql, [values], callback);
@@ -55,16 +54,24 @@ const Product = {
       id
     ], callback);
   },
-
+  //Cập nhật số lượng cho tất cả size của sản phẩm
+  updateInventory: (maSP, soLuong, callback) => {
+    const sql = "UPDATE ChiTietSanPham SET soLuongTon = ? WHERE maSP = ?";
+    db.query(sql, [soLuong, maSP], callback);
+  },
   // Xóa sản phẩm
   delete: (id, callback) => {
     const sql = "DELETE FROM SanPham WHERE maSP = ?";
     db.query(sql, [id], callback);
   },
 
-  // ... (Giữ nguyên các hàm quản lý danh mục cũ nếu cần) ...
+  // Các hàm danh mục
   getCategories: (productId, callback) => {
-    const sql = "SELECT maDanhMuc FROM SanPham_DanhMuc WHERE maSP = ?";
+    const sql = `
+        SELECT d.maDanhMuc, d.tenDanhMuc 
+        FROM SanPham_DanhMuc sd 
+        JOIN danhMuc d ON sd.maDanhMuc = d.maDanhMuc 
+        WHERE sd.maSP = ?`;
     db.query(sql, [productId], callback);
   },
   addCategory: (productId, categoryId, callback) => {
