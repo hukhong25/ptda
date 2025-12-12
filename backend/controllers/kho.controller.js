@@ -5,10 +5,12 @@ export const getKho = (req, res) => {
   const search = req.query.search || "";
 
   const sql = `
-    SELECT maSP, tenSP, soLuong, anhSP
-    FROM sanPham
-    WHERE tenSP LIKE ?
-    ORDER BY maSP ASC
+    SELECT p.maSP, p.tenSP, p.anhSP, s.tenSize, ct.soLuongTon, ct.maSize
+    FROM SanPham p
+    JOIN ChiTietSanPham ct ON p.maSP = ct.maSP
+    JOIN Size s ON ct.maSize = s.maSize
+    WHERE p.tenSP LIKE ?
+    ORDER BY p.maSP ASC, s.maSize ASC
   `;
 
   db.query(sql, [`%${search}%`], (err, results) => {
@@ -25,14 +27,14 @@ export const getKho = (req, res) => {
 // ------------------- CẬP NHẬT SỐ LƯỢNG KHO -------------------
 export const updateKho = (req, res) => {
   const { maSP } = req.params;
-  const { soLuong } = req.body;
+  const { soLuong, maSize } = req.body;
 
   if (soLuong === undefined || soLuong < 0) {
     return res.status(400).json({ error: "Số lượng không hợp lệ" });
   }
 
-  const sql = "UPDATE sanPham SET soLuong = ? WHERE maSP = ?";
-  db.query(sql, [soLuong, maSP], (err, result) => {
+  const sql = "UPDATE ChiTietSanPham SET soLuongTon = ? WHERE maSP = ? AND maSize = ?";
+  db.query(sql, [soLuong, maSP, maSize], (err, result) => {
     if (err) {
       console.error("Lỗi cập nhật kho:", err);
       return res.status(500).json({ error: "Lỗi server" });

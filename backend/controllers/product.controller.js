@@ -19,7 +19,16 @@ export const getProductById = (req, res) => {
     if (result.length === 0) {
       return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
     }
-    res.json({ product: result[0] });
+    // Dữ liệu sizes trả về từ JSON_ARRAYAGG có thể là string hoặc object tùy driver
+    const product = result[0];
+    if (typeof product.sizes === 'string') {
+        product.sizes = JSON.parse(product.sizes);
+    }
+    // Lọc bỏ null nếu sản phẩm chưa có size nào
+    if (product.sizes && product.sizes[0].maSize === null) {
+        product.sizes = [];
+    }
+    res.json({ product });
   });
 };
 
@@ -35,25 +44,17 @@ export const getProductCategories = (req, res) => {
 
 // ====================== THÊM SẢN PHẨM ===========================
 export const createProduct = (req, res) => {
-  const { tenSP, gia, moTa, soLuong, categories } = req.body;
+  // Lấy thêm inventory từ body nếu có, dạng JSON string
+  const { tenSP, gia, moTa, categories, inventory } = req.body; 
   
   if (!tenSP || !gia) {
     return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
   }
 
-  // Xử lý file upload (nếu có)
   let anhSP = null;
-  if (req.file) {
-    anhSP = req.file.filename;
-  }
+  if (req.file) anhSP = req.file.filename;
 
-  const newProduct = {
-    tenSP,
-    gia: parseInt(gia),
-    moTa: moTa || "",
-    anhSP,
-    soLuong: parseInt(soLuong) || 0
-  };
+  const newProduct = { tenSP, gia: parseInt(gia), moTa: moTa || "", anhSP };
 
   Product.create(newProduct, (err, result) => {
     if (err) {
@@ -63,29 +64,29 @@ export const createProduct = (req, res) => {
 
     const productId = result.insertId;
 
-    // Nếu có danh mục, thêm vào bảng SanPham_DanhMuc
+    // Xử lý Size/Kho (Mặc định tạo 6 size cơ bản với số lượng 0 nếu không có input)
+    let inventoryData = [];
+    if (inventory) {
+        try { inventoryData = JSON.parse(inventory); } catch(e) {}
+    } else {
+        // Mặc định tạo 6 size (ID 1->6) với số lượng 0
+        inventoryData = [1,2,3,4,5,6].map(id => ({ maSize: id, soLuongTon: 0 }));
+    }
+    
+    Product.initInventory(productId, inventoryData, (err) => {
+        if(err) console.error("Lỗi tạo kho:", err);
+    });
+
+    // Xử lý danh mục
     if (categories) {
       let categoryIds = [];
-      try {
-        categoryIds = JSON.parse(categories);
-      } catch (e) {
-        console.error("Error parsing categories:", e);
-      }
-
-      // Thêm từng danh mục
-      if (Array.isArray(categoryIds) && categoryIds.length > 0) {
-        categoryIds.forEach((categoryId) => {
-          Product.addCategory(productId, categoryId, (err) => {
-            if (err) console.error("Lỗi khi thêm danh mục:", err);
-          });
-        });
+      try { categoryIds = JSON.parse(categories); } catch (e) {}
+      if (Array.isArray(categoryIds)) {
+        categoryIds.forEach((catId) => Product.addCategory(productId, catId, () => {}));
       }
     }
 
-    res.json({ 
-      message: "Thêm sản phẩm thành công", 
-      productId: productId 
-    });
+    res.json({ message: "Thêm sản phẩm thành công", productId });
   });
 };
 
