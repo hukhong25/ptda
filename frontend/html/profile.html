@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/profile.css"> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="profile-container">
+        <div class="profile-sidebar">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user-circle"></i>
+                <h3 id="sidebar-username">User Name</h3>
+            </div>
+            <ul class="profile-menu">
+                <li class="active" onclick="switchTab('info')"><i class="fa-solid fa-id-card"></i> Thông tin tài khoản</li>
+                <li onclick="switchTab('orders')"><i class="fa-solid fa-box-open"></i> Đơn hàng của tôi</li>
+                <li onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</li>
+            </ul>
+        </div>
+
+        <div class="profile-content">
+            <div id="tab-info" class="tab-content active">
+                <h2>Hồ sơ của tôi</h2>
+                <p>Quản lý thông tin tài khoản</p>
+                <hr>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label>Tên đăng nhập:</label>
+                        <input type="text" id="username" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="email" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại:</label>
+                        <input type="text" id="phone" disabled> </div>
+                    <div class="form-group">
+                        <label>Địa chỉ:</label>
+                        <input type="text" id="address" disabled>
+                    </div>
+                    <button type="button" id="update-btn" class="btn btn-primary" style="margin-top: 10px; padding: 10px 20px; background: #ee4d2d; color: white; border: none; cursor: pointer;">Lưu thay đổi</button>
+                </form>
+            </div>
+
+            <div id="tab-orders" class="tab-content" style="display: none;">
+                <h2>Đơn hàng đã đặt</h2>
+                <div class="order-list" id="order-list">
+                    <p>Đang tải đơn hàng...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/Header.js"></script>
+    <script src="../js/profile.js"></script>
+</body>
+</html>
