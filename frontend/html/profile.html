@@ -8,7 +8,28 @@
     <link rel="stylesheet" href="../css/profile.css"> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div id="header-placeholder"></div>
+    <header class="header">
+      <div class="logo" id="logo">MyShop</div>
+
+      <div class="header-right">
+        <button id="loginBtn">Đăng nhập</button>
+        <button id="registerBtn">Đăng ký</button>
+
+        <div class="user-menu" id="userMenu">
+          <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
+          <span id="userName">User</span>
+          <div class="dropdown" id="dropdownMenu">
+            <a href="/html/profile.html">Thông tin cá nhân</a>
+            <a href="/html/orders.html">Đơn hàng</a>
+            <a id="logoutBtn">Đăng xuất</a>
+          </div>
+        </div>
+
+        <div class="cart-icon" id="cartBtn">
+          🛒 <span id="cartCount">0</span>
+        </div>
+      </div>
+    </header>
 
     <div class="profile-container">
         <div class="profile-sidebar">
@@ -26,28 +47,45 @@
         <div class="profile-content">
             <div id="tab-info" class="tab-content active">
                 <h2>Hồ sơ của tôi</h2>
-                <p>Quản lý thông tin tài khoản</p>
                 <hr>
-                <form id="profile-form">
-                    <div class="form-group">
-                        <label>Tên đăng nhập:</label>
-                        <input type="text" id="username" disabled>
+                <div class="profile-layout" style="display: flex; gap: 30px;">
+                    
+                    <div style="flex: 1;">
+                        <h3>Thông tin chung</h3>
+                        <form id="profile-form">
+                            <div class="form-group">
+                                <label>Tên đăng nhập:</label>
+                                <input type="text" id="username">
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" id="email" disabled style="background: #eee;">
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện thoại:</label>
+                                <input type="text" id="phone">
+                            </div>
+                            <button type="button" id="update-btn" class="btn btn-primary" style="margin-top:10px; width: 100%; padding: 10px; background: #ee4d2d; color: white; border: none; cursor: pointer;">Cập nhật thông tin</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <input type="email" id="email" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label>Số điện thoại:</label>
-                        <input type="text" id="phone" disabled> </div>
-                    <div class="form-group">
-                        <label>Địa chỉ:</label>
-                        <input type="text" id="address" disabled>
-                    </div>
-                    <button type="button" id="update-btn" class="btn btn-primary" style="margin-top: 10px; padding: 10px 20px; background: #ee4d2d; color: white; border: none; cursor: pointer;">Lưu thay đổi</button>
-                </form>
-            </div>
 
+                    <div style="flex: 1; border-left: 1px solid #ddd; padding-left: 30px;">
+                        <h3>Sổ địa chỉ</h3>
+                        
+                        <ul id="address-list" style="list-style: none; padding: 0; margin-bottom: 20px;">
+                            </ul>
+
+                        <div class="add-address-box" style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+                            <h4>Thêm địa chỉ mới</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="new-address" placeholder="Nhập địa chỉ mới..." style="flex: 1; padding: 8px;">
+                                <button onclick="addNewAddress()" style="padding: 8px 15px; background: #28a745; color: white; border: none; cursor: pointer;">Thêm</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div id="tab-orders" class="tab-content" style="display: none;">
                 <h2>Đơn hàng đã đặt</h2>
                 <div class="order-list" id="order-list">

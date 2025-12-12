@@ -1,21 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
-
     if (!token) {
-        alert("Vui lòng đăng nhập!");
         window.location.href = "login.html";
         return;
     }
-
-    // Load dữ liệu
     fetchProfile(token);
     fetchOrders(token);
 
-    // Bắt sự kiện nút Cập nhật (Nếu bạn có nút này trong HTML)
-    const updateBtn = document.getElementById("update-btn"); // Thêm id="update-btn" cho nút Lưu trong HTML
-    if(updateBtn) {
-        updateBtn.addEventListener("click", () => updateProfile(token));
-    }
+    document.getElementById("update-btn").addEventListener("click", () => updateBasicInfo(token));
 });
 
 async function fetchProfile(token) {
@@ -26,58 +18,110 @@ async function fetchProfile(token) {
         const data = await response.json();
 
         if (response.ok) {
-            // Hiển thị dữ liệu
-            if(document.getElementById("sidebar-username")) document.getElementById("sidebar-username").innerText = data.username;
-            if(document.getElementById("username")) document.getElementById("username").value = data.username;
-            if(document.getElementById("email")) document.getElementById("email").value = data.email;
-            if(document.getElementById("phone")) document.getElementById("phone").value = data.phone;
-            if(document.getElementById("address")) document.getElementById("address").value = data.address;
+            // 1. Điền thông tin cơ bản
+            document.getElementById("sidebar-username").innerText = data.username;
+            document.getElementById("username").value = data.username;
+            document.getElementById("email").value = data.email;
+            document.getElementById("phone").value = data.phone;
 
-            // --- CẤU HÌNH Ô NHẬP LIỆU ---
-            document.getElementById("username").disabled = false; // Cho sửa tên
-            document.getElementById("phone").disabled = false;    // Cho sửa SĐT
-            document.getElementById("address").disabled = false;  // Cho sửa địa chỉ
-            
-            document.getElementById("email").disabled = true;     // KHÓA EMAIL (Không cho sửa)
+            // 2. Render danh sách địa chỉ
+            renderAddressList(data.addresses);
         }
     } catch (error) {
         console.error("Lỗi profile:", error);
     }
 }
 
-async function updateProfile(token) {
-    // Lấy giá trị từ các ô input
+function renderAddressList(addresses) {
+    const listEl = document.getElementById("address-list");
+    listEl.innerHTML = ""; // Xóa cũ
+
+    if (!addresses || addresses.length === 0) {
+        listEl.innerHTML = "<li>Chưa có địa chỉ nào.</li>";
+        return;
+    }
+
+    addresses.forEach(addr => {
+        const li = document.createElement("li");
+        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;";
+        
+        li.innerHTML = `
+            <span><i class="fa-solid fa-map-marker-alt" style="color:#ee4d2d; margin-right:8px;"></i> ${addr.tenDiaChi}</span>
+            <button onclick="removeAddress(${addr.maDiaChi})" style="background:none; border:none; color: red; cursor: pointer;">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        listEl.appendChild(li);
+    });
+}
+
+// Hàm cập nhật Tên & SĐT
+async function updateBasicInfo(token) {
     const username = document.getElementById("username").value;
     const phone = document.getElementById("phone").value;
-    const address = document.getElementById("address").value; // Lấy địa chỉ
 
     try {
-        const response = await fetch("http://localhost:3000/api/users/profile", {
+        const res = await fetch("http://localhost:3000/api/users/profile", {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             },
-            // Chỉ gửi username, phone, address (không gửi email)
-            body: JSON.stringify({ username, phone, address }) 
+            body: JSON.stringify({ username, phone })
+        });
+        const result = await res.json();
+        alert(result.message);
+    } catch (err) {
+        alert("Lỗi cập nhật!");
+    }
+}
+
+// Hàm thêm địa chỉ mới (Gọi từ HTML)
+async function addNewAddress() {
+    const token = localStorage.getItem("token");
+    const address = document.getElementById("new-address").value.trim();
+    if (!address) return alert("Vui lòng nhập địa chỉ!");
+
+    try {
+        const res = await fetch("http://localhost:3000/api/users/address", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ address })
         });
 
-        const result = await response.json();
-        if (response.ok) {
-            alert(result.message);
-            // Cập nhật lại tên hiển thị bên góc trái
-            document.getElementById("sidebar-username").innerText = username;
-            
-            // Cập nhật localStorage
-            const user = JSON.parse(localStorage.getItem("user")) || {};
-            user.ten = username;
-            localStorage.setItem("user", JSON.stringify(user));
+        if (res.ok) {
+            alert("Thêm địa chỉ thành công!");
+            document.getElementById("new-address").value = ""; // Xóa ô nhập
+            fetchProfile(token); // Load lại danh sách để hiện cái mới
         } else {
-            alert("Lỗi: " + result.message);
+            alert("Lỗi thêm địa chỉ");
         }
-    } catch (error) {
-        console.error("Lỗi update:", error);
-        alert("Có lỗi xảy ra khi cập nhật.");
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Hàm xóa địa chỉ (Gọi từ HTML)
+async function removeAddress(id) {
+    if (!confirm("Bạn có chắc muốn xóa địa chỉ này?")) return;
+    const token = localStorage.getItem("token");
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/users/address/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            fetchProfile(token); // Load lại danh sách
+        } else {
+            alert("Không thể xóa địa chỉ này.");
+        }
+    } catch (err) {
+        console.error(err);
     }
 }
 

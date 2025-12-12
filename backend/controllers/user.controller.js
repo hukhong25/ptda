@@ -13,75 +13,71 @@ export const getAllUsers = (req, res) => {
   });
 };
 
-// ====================== LẤY PROFILE (Kèm Địa chỉ từ bảng DiaChi) ===========================
+// ====================== LẤY PROFILE (Kèm danh sách địa chỉ) ===========================
 export const getProfile = (req, res) => {
   const userId = req.user.id;
 
-  // JOIN bảng users với bảng DiaChi để lấy địa chỉ mới nhất
-  const query = `
-    SELECT u.id, u.ten AS username, u.email, u.sdt AS phone, u.role, d.tenDiaChi AS address
-    FROM users u
-    LEFT JOIN DiaChi d ON u.id = d.id
-    WHERE u.id = ?
-    ORDER BY d.maDiaChi DESC 
-    LIMIT 1
-  `;
-
-  db.query(query, [userId], (err, results) => {
+  // 1. Lấy thông tin User
+  const queryUser = "SELECT id, ten AS username, email, sdt AS phone, role FROM users WHERE id = ?";
+  
+  db.query(queryUser, [userId], (err, userResults) => {
     if (err) return res.status(500).json({ message: "Lỗi server", error: err });
-    if (results.length === 0) return res.status(404).json({ message: "User not found" });
+    if (userResults.length === 0) return res.status(404).json({ message: "User not found" });
+
+    const user = userResults[0];
+
+    // 2. Lấy danh sách địa chỉ của User này
+    const queryAddr = "SELECT maDiaChi, tenDiaChi FROM DiaChi WHERE id = ? ORDER BY maDiaChi DESC";
     
-    const user = results[0];
-    // Nếu chưa có địa chỉ thì trả về chuỗi rỗng
-    if (!user.address) user.address = ""; 
-    
-    res.json(user);
+    db.query(queryAddr, [userId], (err, addrResults) => {
+      if (err) return res.status(500).json({ message: "Lỗi lấy địa chỉ", error: err });
+      
+      // Gán danh sách địa chỉ vào object user trả về
+      user.addresses = addrResults; 
+      res.json(user);
+    });
   });
 };
 
-// ====================== CẬP NHẬT PROFILE (Tên, SĐT và Địa chỉ) ===========================
+// ====================== CẬP NHẬT THÔNG TIN CÁ NHÂN (Tên, SĐT) ===========================
 export const updateProfile = (req, res) => {
   const userId = req.user.id;
-  const { username, phone, address } = req.body; // Lấy dữ liệu từ Frontend
+  const { username, phone } = req.body;
 
-  // 1. Cập nhật thông tin cơ bản trong bảng USERS (ten, sdt)
-  const updateUserQuery = "UPDATE users SET ten = ?, sdt = ? WHERE id = ?";
-
-  db.query(updateUserQuery, [username, phone, userId], (err, result) => {
-    if (err) {
-      console.error("Lỗi update user:", err);
-      return res.status(500).json({ message: "Lỗi cập nhật thông tin cá nhân", error: err });
-    }
-
-    // 2. Xử lý địa chỉ trong bảng DiaChi
-    if (address) {
-      // Kiểm tra xem user này đã có địa chỉ nào chưa
-      const checkAddressQuery = "SELECT maDiaChi FROM DiaChi WHERE id = ?";
-      
-      db.query(checkAddressQuery, [userId], (err, results) => {
-        if (err) return res.status(500).json({ message: "Lỗi kiểm tra địa chỉ" });
-
-        if (results.length > 0) {
-          // TRƯỜNG HỢP 1: Đã có địa chỉ -> Cập nhật (UPDATE) địa chỉ đó
-          const updateAddrQuery = "UPDATE DiaChi SET tenDiaChi = ? WHERE id = ?";
-          db.query(updateAddrQuery, [address, userId], (err) => {
-            if (err) return res.status(500).json({ message: "Lỗi cập nhật địa chỉ" });
-            res.json({ message: "Cập nhật thông tin và địa chỉ thành công!" });
-          });
-        } else {
-          // TRƯỜNG HỢP 2: Chưa có địa chỉ -> Thêm mới (INSERT) vào bảng DiaChi
-          const insertAddrQuery = "INSERT INTO DiaChi (tenDiaChi, id) VALUES (?, ?)";
-          db.query(insertAddrQuery, [address, userId], (err) => {
-            if (err) return res.status(500).json({ message: "Lỗi thêm địa chỉ mới" });
-            res.json({ message: "Đã cập nhật thông tin và thêm địa chỉ mới!" });
-          });
-        }
-      });
-    } else {
-      // Nếu người dùng không nhập địa chỉ, chỉ báo thành công phần user
-      res.json({ message: "Cập nhật thông tin cơ bản thành công!" });
-    }
+  const query = "UPDATE users SET ten = ?, sdt = ? WHERE id = ?";
+  
+  db.query(query, [username, phone, userId], (err, result) => {
+    if (err) return res.status(500).json({ message: "Lỗi cập nhật", error: err });
+    res.json({ message: "Cập nhật thông tin cá nhân thành công!" });
   });
+};
+
+// ====================== THÊM ĐỊA CHỈ MỚI ===========================
+export const addAddress = (req, res) => {
+    const userId = req.user.id;
+    const { address } = req.body;
+
+    if (!address) return res.status(400).json({ message: "Địa chỉ không được để trống" });
+
+    const query = "INSERT INTO DiaChi (tenDiaChi, id) VALUES (?, ?)";
+    
+    db.query(query, [address, userId], (err, result) => {
+        if (err) return res.status(500).json({ message: "Lỗi thêm địa chỉ", error: err });
+        res.json({ message: "Thêm địa chỉ thành công", id: result.insertId });
+    });
+};
+
+// ====================== XÓA ĐỊA CHỈ ===========================
+export const deleteAddress = (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params; // id của địa chỉ cần xóa
+
+    const query = "DELETE FROM DiaChi WHERE maDiaChi = ? AND id = ?";
+    
+    db.query(query, [id, userId], (err, result) => {
+        if (err) return res.status(500).json({ message: "Lỗi xóa địa chỉ", error: err });
+        res.json({ message: "Đã xóa địa chỉ" });
+    });
 };
 
 // ====================== XÓA USER (ADMIN) ===========================
