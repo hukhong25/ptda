@@ -1,6 +1,7 @@
 {
   "name": "web-ban-quan-ao",
   "version": "1.0.0",
+  "type": "module",
   "description": "Website bán quần áo với Node.js, Express, MySQL, JWT",
   "main": "server.js",
   "scripts": {
