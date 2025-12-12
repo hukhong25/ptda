@@ -40,12 +40,28 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">CLOTHES SHOP</div>
-        <nav>
-            <a href="/html/index.html">Trang chủ</a>
-            <a href="/html/cart.html">Giỏ hàng</a>
-        </nav>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo" id="logo">MyShop</div>
+
+      <div class="header-right">
+        <button id="loginBtn">Đăng nhập</button>
+        <button id="registerBtn">Đăng ký</button>
+
+        <div class="user-menu" id="userMenu">
+          <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
+          <span id="userName">User</span>
+          <div class="dropdown" id="dropdownMenu">
+            <a href="/html/profile.html">Thông tin cá nhân</a>
+            <a href="/html/orders.html">Đơn hàng</a>
+            <a id="logoutBtn">Đăng xuất</a>
+          </div>
+        </div>
+
+        <div class="cart-icon" id="cartBtn">
+          🛒 <span id="cartCount">0</span>
+        </div>
+      </div>
     </header>
 
     <div class="checkout-container">
