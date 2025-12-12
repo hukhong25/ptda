@@ -142,3 +142,9 @@ CREATE TABLE ChiTietDonHang (
     FOREIGN KEY (maSP) REFERENCES SanPham(maSP),
     FOREIGN KEY (maSize) REFERENCES Size(maSize)
 );
+INSERT INTO Size (tenSize) VALUES 
+('S'), 
+('M'), 
+('L'), 
+('XL'), 
+('2XL');

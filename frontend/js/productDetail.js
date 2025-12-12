@@ -2,7 +2,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
-
+  let selectedSizeId = null;
   if (!productId) return;
 
   const productName = document.getElementById("productName");
@@ -14,27 +14,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnPlus = document.getElementById("btnPlus");
   const addToCartBtn = document.getElementById("addToCartBtn");
   const buyNowBtn = document.getElementById("buyNowBtn");
-
+  const sizeContainer = document.getElementById("sizeContainer");
   let user = JSON.parse(localStorage.getItem("user"));
   let token = localStorage.getItem("token");
 
   // ---------------- LOAD PRODUCT ----------------
   async function loadProduct() {
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/products/${productId}`
-      );
+      const res = await fetch(`http://localhost:3000/api/products/${productId}`);
       const data = await res.json();
       if (!res.ok) return;
 
       const p = data.product;
-      productName.textContent = p.tenSP;
-      productPrice.textContent = Number(p.gia).toLocaleString() + " VND";
-      productDesc.textContent = p.moTa || "Không có mô tả.";
-      productImage.src = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
-    } catch (err) {
-      console.error(err);
-    }
+      // ... gán tên, giá, ảnh ...
+
+      // RENDER SIZE
+      if (p.sizes && p.sizes.length > 0) {
+        sizeContainer.innerHTML = "";
+        p.sizes.forEach(s => {
+            const btn = document.createElement("button");
+            btn.className = "size-btn";
+            btn.innerText = s.tenSize;
+            
+            // Check tồn kho
+            if (s.soLuongTon <= 0) {
+                btn.classList.add("disabled");
+                btn.disabled = true;
+            }
+
+            btn.addEventListener("click", () => {
+                // Xóa active cũ
+                document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+                // Active mới
+                btn.classList.add("active");
+                selectedSizeId = s.maSize;
+            });
+            sizeContainer.appendChild(btn);
+        });
+      }
+    } catch (err) { console.error(err); }
   }
 
   loadProduct();
@@ -50,25 +68,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ---------------- ADD TO CART ----------------
   addToCartBtn.addEventListener("click", async () => {
-    if (!user || !token) {
-      window.location.href = "/html/login.html";
-      return;
+   if (!user || !token) {
+    alert("Bạn cần đăng nhập trước!");
+    window.location.href = "login.html";  // chuyển hướng
+    return;
+   }
+    
+    if (!selectedSizeId) {
+        alert("Vui lòng chọn Size!");
+        return;
     }
 
     const qty = parseInt(qtyInput.value);
 
-    // Gọi API thêm giỏ
     await fetch("http://localhost:3000/api/cart/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ maSP: productId, soLuong: qty }),
+      // Gửi thêm maSize
+      body: JSON.stringify({ maSP: productId, soLuong: qty, maSize: selectedSizeId }),
     });
 
     alert("Đã thêm vào giỏ hàng!");
-    window.updateHeaderCartCount?.(); // update header
+    window.updateHeaderCartCount?.();
   });
 
   // ---------------- BUY NOW ----------------

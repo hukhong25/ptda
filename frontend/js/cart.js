@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         detailsDiv.className = "cart-item-details";
         detailsDiv.innerHTML = `
           <h3>${item.tenSP}</h3>
+          <p class="item-size">Size: ${item.tenSize || 'N/A'}</p> <p>${Number(item.gia).toLocaleString()} VND</p>
           <p>${Number(item.gia).toLocaleString()} VND</p>
           <div class="quantity-control">
             <button class="minus">-</button>
@@ -97,8 +98,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({
-                maSP: item.maSP,
-                soLuong: item.soLuongMua - 1,
+                  maSP: item.maSP,
+                  soLuong: item.soLuongMua - 1,
+                  maSize: item.maSize // Gửi kèm maSize
               }),
             });
             loadCart();
@@ -123,12 +125,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         removeBtn.addEventListener("click", async () => {
-          await fetch(`http://localhost:3000/api/cart/remove/${item.maSP}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          loadCart();
-          window.updateHeaderCartCount?.();
+            await fetch(`http://localhost:3000/api/cart/remove`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify({ maSP: item.maSP, maSize: item.maSize })
+            });
+            loadCart();
         });
 
         checkbox.addEventListener("change", updateTotal);

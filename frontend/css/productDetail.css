@@ -267,3 +267,7 @@ footer {
     margin: 10px 0;
   }
 }
+.sizes-grid { display: flex; gap: 10px; margin-top: 5px; }
+.size-btn { padding: 8px 15px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+.size-btn.active { border-color: #000; background: #000; color: #fff; }
+.size-btn.disabled { opacity: 0.5; cursor: not-allowed; background: #eee; }
