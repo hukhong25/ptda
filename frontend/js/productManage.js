@@ -69,46 +69,75 @@ document.addEventListener("DOMContentLoaded", () => {
   // SỬA: Chọn đúng ID nút close
   const closeBtn = document.getElementById("closeProductModal"); 
 
-  // Hàm Sửa
-  window.editProduct = async function(id) {
-      editingProductId = id;
-      const data = await fetchData(`products/${id}`);
-      if(!data.product) return alert("Lỗi tải sản phẩm");
-      const p = data.product;
 
-      document.getElementById("modalTitle").innerText = "Sửa sản phẩm";
-      document.getElementById("productName").value = p.tenSP;
-      document.getElementById("productPrice").value = p.gia;
-      document.getElementById("productDesc").value = p.moTa;
-      document.getElementById("productStock").value = p.soLuong || 0;
 
-      // Xử lý Size: Reset trước
-      document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
-      // Nếu sản phẩm có dữ liệu size trả về (giả sử backend trả về mảng sizes)
-      if (p.sizes && Array.isArray(p.sizes)) {
-         p.sizes.forEach(s => {
-             const cb = document.querySelector(`input[name="productSize"][value="${s}"]`);
-             if(cb) cb.checked = true;
-         });
-      }
+ // Hàm Sửa (Đã thêm kiểm tra null để tránh lỗi)
+window.editProduct = async function(id) {
+    console.log("Đang sửa sản phẩm:", id);
+    editingProductId = id;
 
-      // Ảnh cũ
-      const imgDiv = document.getElementById("currentImage");
-      if(p.anhSP) {
-          imgDiv.innerHTML = `<img src="/Asset/${p.anhSP}" width="80">`;
-          imgDiv.dataset.oldimage = p.anhSP;
-          imgDiv.style.display = "block";
-      } else {
-          imgDiv.style.display = "none";
-      }
+    // Gọi API lấy chi tiết sản phẩm
+    const data = await fetchData(`products/${id}`);
+    if (!data.product) return alert("Lỗi tải sản phẩm");
+    const p = data.product;
 
-      // Load categories
-      const pCatData = await fetchData(`products/${id}/categories`);
-      const selectedIds = (pCatData.categories || []).map(c => c.maDanhMuc);
-      loadCategories(selectedIds);
+    // Cập nhật tiêu đề Modal
+    const title = document.getElementById("modalTitle");
+    if(title) title.innerText = "Sửa sản phẩm";
 
-      modal.style.display = "block";
-  };
+    // --- ĐIỀN DỮ LIỆU VÀO FORM (CÓ KIỂM TRA) ---
+    
+    // Tên sản phẩm
+    const nameInput = document.getElementById("productName");
+    if (nameInput) nameInput.value = p.tenSP || "";
+
+    // Giá sản phẩm
+    const priceInput = document.getElementById("productPrice");
+    if (priceInput) priceInput.value = p.gia || 0;
+
+    // Mô tả
+    const descInput = document.getElementById("productDesc");
+    if (descInput) descInput.value = p.moTa || "";
+
+    // Số lượng (Đây là chỗ gây lỗi cũ nếu thiếu thẻ input)
+    const stockInput = document.getElementById("productStock");
+    if (stockInput) {
+        stockInput.value = p.soLuong || 0;
+    }
+
+    // --- XỬ LÝ CHECKBOX SIZE ---
+    // Reset toàn bộ size trước
+    document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
+    // Tích chọn size đã có
+    if (p.sizes && Array.isArray(p.sizes)) {
+        p.sizes.forEach(s => {
+            const cb = document.querySelector(`input[name="productSize"][value="${s}"]`);
+            if (cb) cb.checked = true;
+        });
+    }
+
+    // --- XỬ LÝ ẢNH ---
+    const imgDiv = document.getElementById("currentImage");
+    if (imgDiv) {
+        if (p.anhSP) {
+            imgDiv.innerHTML = `<img src="/Asset/${p.anhSP}" width="80" style="margin-top:5px;">`;
+            imgDiv.dataset.oldimage = p.anhSP;
+            imgDiv.style.display = "block";
+        } else {
+            imgDiv.style.display = "none";
+        }
+    }
+
+    // --- XỬ LÝ DANH MỤC ---
+    const pCatData = await fetchData(`products/${id}/categories`);
+    const selectedIds = (pCatData.categories || []).map(c => c.maDanhMuc);
+    loadCategories(selectedIds);
+
+    // HIỆN MODAL
+    const modal = document.getElementById("productModal");
+    if (modal) modal.style.display = "block";
+};
+
 
   // Hàm Xóa (Giữ nguyên)
   window.deleteProduct = async function(id) {
@@ -125,56 +154,71 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- SUBMIT FORM (QUAN TRỌNG) ---
-  if (form) {
-      form.addEventListener("submit", async (e) => {
-          e.preventDefault(); // Ngăn chặn reload trang mặc định
+ 
 
-          const formData = new FormData();
-          formData.append("tenSP", document.getElementById("productName").value);
-          formData.append("gia", document.getElementById("productPrice").value);
-          formData.append("moTa", document.getElementById("productDesc").value);
-          formData.append("soLuong", document.getElementById("productStock").value);
+const btnSave = document.getElementById("btnSaveProduct");
 
-          // Lấy Categories
-          const cats = [];
-          document.querySelectorAll("#productCategoriesContainer input:checked").forEach(cb => cats.push(cb.value));
-          formData.append("categories", JSON.stringify(cats));
+if (btnSave) {
+    btnSave.addEventListener("click", async () => {
+        // 1. Tự kiểm tra dữ liệu bắt buộc (Validation)
+        const form = document.getElementById("productForm");
+        if (!form.checkValidity()) {
+            form.reportValidity(); // Hiển thị thông báo lỗi của trình duyệt nếu thiếu dữ liệu
+            return; // Dừng lại, không gửi
+        }
 
-          // SỬA: Lấy dữ liệu Size
-          const sizes = [];
-          document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => sizes.push(cb.value));
-          formData.append("sizes", JSON.stringify(sizes)); // Gửi lên backend dưới dạng JSON string
+        // 2. Lấy dữ liệu (Code cũ giữ nguyên logic này)
+        const formData = new FormData();
+        formData.append("tenSP", document.getElementById("productName").value);
+        formData.append("gia", document.getElementById("productPrice").value);
+        formData.append("moTa", document.getElementById("productDesc").value);
+        formData.append("soLuong", 0); // Hoặc lấy từ input nếu có
 
-          const file = document.getElementById("productImage").files[0];
-          if(file) formData.append("anhSP", file);
-          if(editingProductId) {
-              const old = document.getElementById("currentImage")?.dataset.oldimage;
-              if(old) formData.append("oldImage", old);
-          }
+        // Lấy Categories
+        const cats = [];
+        document.querySelectorAll("#productCategoriesContainer input:checked").forEach(cb => cats.push(cb.value));
+        formData.append("categories", JSON.stringify(cats));
 
-          const url = editingProductId ? `http://localhost:3000/api/products/${editingProductId}` : "http://localhost:3000/api/products";
-          const method = editingProductId ? "PUT" : "POST";
+        // Lấy Size
+        const sizes = [];
+        document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => sizes.push(cb.value));
+        formData.append("sizes", JSON.stringify(sizes));
 
-          try {
-              const res = await fetch(url, {
-                  method: method,
-                  headers: { Authorization: `Bearer ${token}` },
-                  body: formData
-              });
-              
-              if(res.ok) {
-                  alert("Thành công!");
-                  modal.style.display = "none";
-                  renderProducts();
-                  // Lưu ý: Code này KHÔNG có dòng location.reload() nên sẽ không tải lại trang.
-                  // Nếu trang vẫn tải lại, hãy kiểm tra xem có file JS nào khác can thiệp không.
-              } else {
-                  const d = await res.json();
-                  alert(d.message || "Có lỗi xảy ra");
-              }
-          } catch(err) { console.error(err); alert("Lỗi kết nối"); }
-      });
-  }
+        // Lấy Ảnh
+        const file = document.getElementById("productImage").files[0];
+        if (file) formData.append("anhSP", file);
+        if (editingProductId) {
+            const old = document.getElementById("currentImage")?.dataset.oldimage;
+            if (old) formData.append("oldImage", old);
+        }
+
+        // 3. Gửi API
+        const url = editingProductId 
+            ? `http://localhost:3000/api/products/${editingProductId}` 
+            : "http://localhost:3000/api/products";
+        const method = editingProductId ? "PUT" : "POST";
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { Authorization: `Bearer ${token}` }, // Bỏ Content-Type vì FormData tự lo
+                body: formData
+            });
+
+            if (res.ok) {
+                alert("Thành công!");
+                document.getElementById("productModal").style.display = "none";
+                renderProducts(); // Tải lại danh sách
+            } else {
+                const d = await res.json();
+                alert(d.message || "Có lỗi xảy ra");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Lỗi kết nối server");
+        }
+    });
+}
 
   // Helper functions
   async function loadCategories(selectedIds = []) {
