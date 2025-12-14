@@ -148,21 +148,21 @@ button.delete-btn:hover {
   background: #d32f2f;
 }
 
+
 /* ==========================
-   MODAL
+   MODAL - SỬA LẠI
 ========================== */
 .modal {
   display: none;
   position: fixed;
   z-index: 200;
-  padding-top: 80px;
+  padding-top: 50px; /* Giảm khoảng cách top */
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden; /* Ẩn cuộn của background */
   background-color: rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
 }
 
 .modal-content {
@@ -170,11 +170,53 @@ button.delete-btn:hover {
   margin: auto;
   padding: 25px;
   border-radius: 12px;
-  width: 450px;
+  width: 500px; /* Tăng chiều rộng một chút cho đẹp */
   position: relative;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   animation: slideDown 0.3s ease;
+  
+  /* --- PHẦN QUAN TRỌNG ĐỂ SCROLL --- */
+  max-height: 85vh; /* Chiều cao tối đa bằng 85% màn hình */
+  overflow-y: auto; /* Nếu dài hơn thì hiện thanh cuộn */
+  display: flex;
+  flex-direction: column;
 }
+
+/* Tùy chỉnh thanh cuộn cho đẹp (Webkit browsers) */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Style cho phần chọn Size */
+.size-container {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+.size-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.size-option input {
+  width: auto; /* Reset width 100% của input chung */
+  margin-right: 5px;
+}
+
+/*--- phần sửa model*/
+
+
 
 @keyframes slideDown {
   from {

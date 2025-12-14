@@ -32,6 +32,7 @@ input {
   margin-top: 5px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 button {
@@ -66,4 +67,33 @@ button:hover {
 }
 .register-link a:hover {
   text-decoration: underline;
+}
+
+/* 1. Tắt mắt mặc định của trình duyệt (Edge/IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* 2. Style cho mắt mới tự tạo */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* Chừa chỗ cho icon */
+  
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 56%;
+  transform: translateY(-50%); /* Căn giữa dọc */
+  cursor: pointer;
+  font-size: 18px; /* Kích thước icon */
+  color: #666;     /* Màu sắc icon */
+  z-index: 2;
 }

@@ -114,50 +114,60 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------- SUBMIT FORM (THÊM/SỬA) -------------------
-  if (categoryForm) {
-    categoryForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  // --- XỬ LÝ LƯU DANH MỤC (Sửa thành bắt sự kiện Click) ---
+  const btnSaveCat = document.getElementById("btnSaveCategory"); // Lấy nút theo ID mới
 
-      const tenDanhMuc = document.getElementById("categoryName").value.trim();
+  if (btnSaveCat) {
+      btnSaveCat.addEventListener("click", async (e) => {
+          e.preventDefault(); // Chặn hành vi mặc định
 
-      if (!tenDanhMuc) {
-        alert("Vui lòng nhập tên danh mục!");
-        return;
-      }
+          const tenDanhMuc = document.getElementById("categoryName").value.trim();
 
-      try {
-        const url = editingCategoryId
-          ? `http://localhost:3000/api/categories/${editingCategoryId}`
-          : "http://localhost:3000/api/categories";
+          if (!tenDanhMuc) {
+              alert("Vui lòng nhập tên danh mục!");
+              return;
+          }
 
-        const method = editingCategoryId ? "PUT" : "POST";
+          const url = editingCategoryId
+              ? `http://localhost:3000/api/categories/${editingCategoryId}`
+              : "http://localhost:3000/api/categories";
 
-        const res = await fetch(url, {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ tenDanhMuc }),
-        });
+          const method = editingCategoryId ? "PUT" : "POST";
 
-        const data = await res.json();
+          // Khóa nút
+          btnSaveCat.disabled = true;
+          btnSaveCat.innerText = "Đang xử lý...";
 
-        if (!res.ok) {
-          alert(data.message || "Có lỗi xảy ra");
-          return;
-        }
+          try {
+              const res = await fetch(url, {
+                  method,
+                  headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ tenDanhMuc }),
+              });
 
-        alert(data.message || "Thành công");
-        categoryModal.style.display = "none";
-        categoryForm.reset();
-        editingCategoryId = null;
-        renderCategories();
-      } catch (err) {
-        console.error("Submit category error:", err);
-        alert("Lỗi khi lưu danh mục");
-      }
-    });
+              const data = await res.json();
+
+              if (!res.ok) {
+                  alert(data.message || "Có lỗi xảy ra");
+              } else {
+                  alert(data.message || "Thành công");
+                  document.getElementById("categoryModal").style.display = "none"; // Ẩn modal
+                  document.getElementById("categoryForm").reset();
+                  editingCategoryId = null;
+                  renderCategories(); // Chỉ vẽ lại bảng
+              }
+          } catch (err) {
+              console.error("Lỗi:", err);
+              alert("Lỗi khi lưu danh mục");
+          } finally {
+              // Mở lại nút
+              btnSaveCat.disabled = false;
+              btnSaveCat.innerText = "💾 Lưu";
+          }
+      });
   }
 
   // ------------------- SỬA DANH MỤC -------------------

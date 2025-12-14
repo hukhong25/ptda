@@ -117,84 +117,48 @@
             required
           />
 
-          <button type="submit" style="background: #4caf50">💾 Lưu</button>
+         <button type="button" id="btnSaveCategory" style="background: #4caf50; margin-top: auto;">💾 Lưu</button>
         </form>
       </div>
     </div>
 
-    <!-- Modal Thêm/Sửa sản phẩm -->
+    <!-- Modal Thêm/Sửa sản phẩm đã sửa mới-->
     <div id="productModal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
+        <span class="close" id="closeProductModal">&times;</span>
+        
         <h3 id="modalTitle">Thêm sản phẩm</h3>
         <form id="productForm">
           <label>Tên sản phẩm *</label>
-          <input
-            type="text"
-            id="productName"
-            placeholder="Nhập tên sản phẩm"
-            required
-          />
+          <input type="text" id="productName" placeholder="Nhập tên sản phẩm" required />
 
           <label>Giá sản phẩm (VND) *</label>
-          <input
-            type="number"
-            id="productPrice"
-            placeholder="Nhập giá"
-            min="0"
-            required
-          />
+          <input type="number" id="productPrice" placeholder="Nhập giá" min="0" required />
 
           <label>Danh mục</label>
-          <div
-            id="productCategoriesContainer"
-            style="
-              margin: 10px 0;
-              border: 1px solid #ccc;
-              padding: 10px;
-              border-radius: 5px;
-              min-height: 100px;
-            "
-          >
-            <!-- Checkbox sẽ được load từ JS -->
+          <div id="productCategoriesContainer" style="margin: 10px 0; border: 1px solid #ccc; padding: 10px; border-radius: 5px; min-height: 100px;">
+            </div>
+
+          <label>Kích thước (Size)</label>
+          <div class="size-container">
+             <label class="size-option"><input type="checkbox" name="productSize" value="S"> S</label>
+             <label class="size-option"><input type="checkbox" name="productSize" value="M"> M</label>
+             <label class="size-option"><input type="checkbox" name="productSize" value="L"> L</label>
+             <label class="size-option"><input type="checkbox" name="productSize" value="XL"> XL</label>
+             <label class="size-option"><input type="checkbox" name="productSize" value="XXL"> XXL</label>
           </div>
-          <small style="color: #666; font-size: 12px">
-            ⓘ Chọn một hoặc nhiều danh mục
-          </small>
+
           <label>Mô tả</label>
-          <textarea
-            id="productDesc"
-            placeholder="Nhập mô tả sản phẩm"
-            rows="3"
-            style="
-              width: 100%;
-              padding: 10px;
-              margin: 10px 0;
-              border: 1px solid #ccc;
-              border-radius: 5px;
-              resize: vertical;
-            "
-          ></textarea>
+          <textarea id="productDesc" placeholder="Nhập mô tả sản phẩm" rows="3" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; resize: vertical;"></textarea>
 
           <label>Số lượng</label>
-          <input
-            type="number"
-            id="productStock"
-            placeholder="Nhập số lượng"
-            min="0"
-            value="0"
-          />
+          <input type="number" id="productStock" placeholder="Nhập số lượng" min="0" value="0" />
 
           <label>Hình ảnh</label>
           <div id="currentImage" style="display: none"></div>
-          <input
-            type="file"
-            id="productImage"
-            accept="image/*"
-            style="margin-bottom: 10px"
-          />
+          <input type="file" id="productImage" accept="image/*" style="margin-bottom: 10px" />
 
-          <button type="submit" style="background: #4caf50">💾 Lưu</button>
+          <button type="submit" style="background: #4caf50; margin-top: auto;">💾 Lưu</button>
         </form>
       </div>
     </div>
