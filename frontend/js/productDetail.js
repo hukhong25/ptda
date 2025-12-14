@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
   let selectedSizeId = null;
+  let currentStock = 0; // BIẾN MỚI: Lưu trữ số lượng tồn của size đang chọn
   
   if (!productId) {
       alert("Không tìm thấy ID sản phẩm");
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addToCartBtn = document.getElementById("addToCartBtn");
   const buyNowBtn = document.getElementById("buyNowBtn");
   const sizeContainer = document.getElementById("sizeContainer");
+  const stockInfo = document.getElementById("stockInfo"); // BIẾN MỚI: Element hiển thị kho
   
   let user = JSON.parse(localStorage.getItem("user"));
   let token = localStorage.getItem("token");
@@ -72,7 +74,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 btn.classList.add("active");
                 btn.style.backgroundColor = "#333";
                 btn.style.color = "#fff";
+                
+                // CẬP NHẬT LOGIC CHỌN SIZE
                 selectedSizeId = s.maSize;
+                currentStock = s.soLuongTon; // Lưu số lượng tồn hiện tại
+                
+                // Hiển thị ra màn hình
+                if(stockInfo) {
+                    stockInfo.innerText = `Số lượng: ${currentStock} sản phẩm`;
+                    stockInfo.style.color = currentStock < 5 ? "black" : "#555"; // Báo đỏ nếu sắp hết
+                }
+
+                // Reset input số lượng về 1 khi đổi size để tránh lỗi logic cũ
+                if(qtyInput) qtyInput.value = 1;
             });
             sizeContainer.appendChild(btn);
         });
@@ -93,15 +107,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         let qty = parseInt(qtyInput.value);
         if (qty > 1) qtyInput.value = qty - 1;
       });
+      
       btnPlus.addEventListener("click", () => {
-        qtyInput.value = parseInt(qtyInput.value) + 1;
+        let qty = parseInt(qtyInput.value);
+        // SỬA: Không cho tăng quá số lượng kho
+        if (selectedSizeId && qty >= currentStock) {
+            alert("Đã đạt giới hạn số lượng trong kho!");
+            return;
+        }
+        qtyInput.value = qty + 1;
+      });
+
+      // SỬA: Xử lý khi người dùng nhập tay số lượng
+      qtyInput.addEventListener("change", () => {
+          let qty = parseInt(qtyInput.value);
+          if (selectedSizeId && qty > currentStock) {
+              alert(`Kho chỉ còn ${currentStock} sản phẩm!`);
+              qtyInput.value = currentStock;
+          }
+          if (qty < 1) qtyInput.value = 1;
       });
   }
 
   // ---------------- ADD TO CART ----------------
   if(addToCartBtn) {
       addToCartBtn.addEventListener("click", async () => {
-       // Lấy lại token mới nhất từ localStorage phòng khi vừa login xong
        user = JSON.parse(localStorage.getItem("user"));
        token = localStorage.getItem("token");
 
@@ -117,6 +147,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const qty = parseInt(qtyInput.value);
+
+        // KIỂM TRA SỐ LƯỢNG TRƯỚC KHI GỬI
+        if (qty > currentStock) {
+            alert(`Sản phẩm này chỉ còn ${currentStock} cái trong kho. Vui lòng giảm số lượng!`);
+            return;
+        }
 
         try {
             const res = await fetch("http://localhost:3000/api/cart/add", {
@@ -136,7 +172,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             if (res.ok) {
                 alert("Đã thêm vào giỏ hàng thành công!");
-                // Nếu có function update count ở header thì gọi
                 if(window.updateHeaderCartCount) window.updateHeaderCartCount();
             } else {
                 alert(result.message || "Lỗi khi thêm vào giỏ");
@@ -155,7 +190,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             alert("Vui lòng chọn Size!");
             return;
         }
+        
         const qty = parseInt(qtyInput.value);
+
+        // KIỂM TRA SỐ LƯỢNG TRƯỚC KHI MUA
+        if (qty > currentStock) {
+            alert(`Sản phẩm này chỉ còn ${currentStock} cái trong kho. Vui lòng giảm số lượng!`);
+            return;
+        }
+
         localStorage.setItem(
           "buyNow",
           JSON.stringify({ id: productId, quantity: qty, maSize: selectedSizeId })

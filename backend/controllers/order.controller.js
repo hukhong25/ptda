@@ -37,18 +37,39 @@ export const createOrder = (req, res) => {
       db.query(queryDetails, [orderDetails], (err) => {
         if (err) return res.status(500).json({ message: "Lỗi lưu chi tiết đơn: " + err.message });
 
-        // 3. Xóa giỏ hàng (Logic đơn giản: xóa theo item đã mua)
+        // 3. Xử lý: Xóa giỏ hàng VÀ Trừ kho sản phẩm
         const getCartQuery = "SELECT maGioHang FROM GioHang WHERE userId = ?";
         db.query(getCartQuery, [userId], (err, cartRows) => {
-            if(!err && cartRows.length > 0) {
-                const maGioHang = cartRows[0].maGioHang;
-                items.forEach(item => {
+            // Lấy mã giỏ hàng (nếu có lỗi hoặc không có thì bỏ qua bước xóa giỏ)
+            const maGioHang = (cartRows && cartRows.length > 0) ? cartRows[0].maGioHang : null;
+
+            items.forEach(item => {
+                // A. Xóa sản phẩm khỏi giỏ hàng (nếu tìm thấy giỏ hàng)
+                if (maGioHang) {
                     db.query(
                         "DELETE FROM ChiTietGioHang WHERE maGioHang = ? AND maSP = ? AND maSize = ?",
                         [maGioHang, item.maSP, item.maSize]
                     );
-                });
-            }
+                }
+
+                // B. [MỚI THÊM] Trừ số lượng tồn kho trong bảng ChiTietSanPham
+                const updateStockQuery = `
+                    UPDATE ChiTietSanPham 
+                    SET soLuongTon = soLuongTon - ? 
+                    WHERE maSP = ? AND maSize = ? AND soLuongTon >= ?
+                `;
+                
+                // Tham số: [Số lượng mua, Mã SP, Mã Size, Số lượng mua (để đảm bảo không bị âm kho)]
+                db.query(
+                    updateStockQuery, 
+                    [item.soLuongMua, item.maSP, item.maSize, item.soLuongMua],
+                    (stockErr) => {
+                        if (stockErr) {
+                            console.error(`Lỗi trừ kho SP ${item.maSP} Size ${item.maSize}:`, stockErr);
+                        }
+                    }
+                );
+            });
         });
 
         res.status(201).json({ message: "Đặt hàng thành công!", maDonHang });
@@ -57,7 +78,7 @@ export const createOrder = (req, res) => {
   );
 };
 
-// ====================== LẤY ĐƠN HÀNG CỦA TÔI ===========================
+// ====================== LẤY ĐƠN HÀNG CỦA TÔI (Giữ nguyên) ===========================
 export const getMyOrders = (req, res) => {
     const userId = req.user.id; 
 
@@ -78,12 +99,10 @@ export const getMyOrders = (req, res) => {
 
     db.query(query, [userId], (err, results) => {
         if (err) {
-            console.error("❌ Lỗi SQL getMyOrders:", err); // Quan trọng: Xem lỗi này trong Terminal
+            console.error("❌ Lỗi SQL getMyOrders:", err); 
             return res.status(500).json({ message: "Lỗi Server khi lấy đơn hàng", error: err.message });
         }
 
-        // Gom nhóm dữ liệu: Vì query trả về nhiều dòng cho 1 đơn hàng (do join sản phẩm)
-        // nên cần gom lại thành 1 object đơn hàng chứa mảng items
         const ordersMap = {};
 
         results.forEach(row => {
@@ -99,7 +118,6 @@ export const getMyOrders = (req, res) => {
                     items: []
                 };
             }
-            // Chỉ push sản phẩm nếu dòng đó có dữ liệu sản phẩm (tránh null)
             if (row.maSP) {
                 ordersMap[row.maDonHang].items.push({
                     tenSP: row.tenSP,
@@ -111,7 +129,6 @@ export const getMyOrders = (req, res) => {
             }
         });
 
-        // Trả về mảng các đơn hàng
         res.status(200).json(Object.values(ordersMap));
     });
 };
