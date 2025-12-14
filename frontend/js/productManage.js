@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Render List ---
   async function renderProducts() {
+    // ... (Giữ nguyên logic render cũ của bạn ở đây) ...
+    // Code render cũ của bạn khá ổn, chỉ cần copy lại vào đây
     const data = await fetchData("products");
     const products = data.products || [];
     const tbody = document.querySelector("#productTable tbody");
@@ -26,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Lấy map tên danh mục
     const catData = await fetchData("categories");
     const categories = catData.categories || [];
     const catMap = {};
@@ -36,11 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const pCats = await fetchData(`products/${p.maSP}/categories`);
       const catNames = (pCats.categories || []).map(c => catMap[c.maDanhMuc] || c.maDanhMuc);
       
-      // SỬA: Hiển thị danh mục kèm số lượng
-      // p.tongSoLuong được lấy từ API getProducts (đã sửa ở Model)
       const catDisplay = catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
       const quantityDisplay = `<span style="color:red; font-weight:bold; margin-left:10px;">(SL: ${p.tongSoLuong})</span>`;
-
       const imgSrc = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
 
       const tr = document.createElement("tr");
@@ -58,17 +56,19 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     }
 
-    // Gắn sự kiện
     document.querySelectorAll(".edit-btn").forEach(btn => 
         btn.addEventListener("click", () => editProduct(btn.dataset.id)));
     document.querySelectorAll(".delete-btn").forEach(btn => 
         btn.addEventListener("click", () => deleteProduct(btn.dataset.id)));
   }
 
-  // --- Add/Edit Form ---
+  // --- Add/Edit Form Logic ---
   const form = document.getElementById("productForm");
   const modal = document.getElementById("productModal");
   
+  // SỬA: Chọn đúng ID nút close
+  const closeBtn = document.getElementById("closeProductModal"); 
+
   // Hàm Sửa
   window.editProduct = async function(id) {
       editingProductId = id;
@@ -80,8 +80,17 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("productName").value = p.tenSP;
       document.getElementById("productPrice").value = p.gia;
       document.getElementById("productDesc").value = p.moTa;
-      // Hiển thị số lượng (lấy từ API detail đã sửa)
-      document.getElementById("productStock").value = p.soLuong || 0; 
+      document.getElementById("productStock").value = p.soLuong || 0;
+
+      // Xử lý Size: Reset trước
+      document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
+      // Nếu sản phẩm có dữ liệu size trả về (giả sử backend trả về mảng sizes)
+      if (p.sizes && Array.isArray(p.sizes)) {
+         p.sizes.forEach(s => {
+             const cb = document.querySelector(`input[name="productSize"][value="${s}"]`);
+             if(cb) cb.checked = true;
+         });
+      }
 
       // Ảnh cũ
       const imgDiv = document.getElementById("currentImage");
@@ -101,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modal.style.display = "block";
   };
 
-  // Hàm Xóa
+  // Hàm Xóa (Giữ nguyên)
   window.deleteProduct = async function(id) {
       if(!confirm("Chắc chắn xóa?")) return;
       try {
@@ -115,19 +124,26 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch(e) { console.error(e); }
   };
 
-  // Submit Form
+  // --- SUBMIT FORM (QUAN TRỌNG) ---
   if (form) {
       form.addEventListener("submit", async (e) => {
-          e.preventDefault();
+          e.preventDefault(); // Ngăn chặn reload trang mặc định
+
           const formData = new FormData();
           formData.append("tenSP", document.getElementById("productName").value);
           formData.append("gia", document.getElementById("productPrice").value);
           formData.append("moTa", document.getElementById("productDesc").value);
-          formData.append("soLuong", document.getElementById("productStock").value); // Gửi số lượng lên
+          formData.append("soLuong", document.getElementById("productStock").value);
 
+          // Lấy Categories
           const cats = [];
           document.querySelectorAll("#productCategoriesContainer input:checked").forEach(cb => cats.push(cb.value));
           formData.append("categories", JSON.stringify(cats));
+
+          // SỬA: Lấy dữ liệu Size
+          const sizes = [];
+          document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => sizes.push(cb.value));
+          formData.append("sizes", JSON.stringify(sizes)); // Gửi lên backend dưới dạng JSON string
 
           const file = document.getElementById("productImage").files[0];
           if(file) formData.append("anhSP", file);
@@ -145,15 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
                   headers: { Authorization: `Bearer ${token}` },
                   body: formData
               });
+              
               if(res.ok) {
                   alert("Thành công!");
                   modal.style.display = "none";
                   renderProducts();
+                  // Lưu ý: Code này KHÔNG có dòng location.reload() nên sẽ không tải lại trang.
+                  // Nếu trang vẫn tải lại, hãy kiểm tra xem có file JS nào khác can thiệp không.
               } else {
                   const d = await res.json();
-                  alert(d.message);
+                  alert(d.message || "Có lỗi xảy ra");
               }
-          } catch(err) { console.error(err); }
+          } catch(err) { console.error(err); alert("Lỗi kết nối"); }
       });
   }
 
@@ -164,6 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = "";
       (data.categories || []).forEach(c => {
           const div = document.createElement("div");
+          div.className = "checkbox-wrapper"; // Dùng class css đã có
           div.innerHTML = `
             <input type="checkbox" id="cat_${c.maDanhMuc}" value="${c.maDanhMuc}" 
               ${selectedIds.includes(c.maDanhMuc) ? "checked" : ""}>
@@ -173,17 +193,47 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
+  // Nút Thêm sản phẩm
   const addBtn = document.getElementById("addProductBtn");
-  const closeBtn = document.querySelector(".close");
   if(addBtn) addBtn.onclick = () => {
       editingProductId = null;
       form.reset();
       document.getElementById("currentImage").style.display = "none";
       document.getElementById("modalTitle").innerText = "Thêm sản phẩm";
+      
+      // Reset checkboxes size
+      document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
+      
       loadCategories([]);
       modal.style.display = "block";
   };
-  if(closeBtn) closeBtn.onclick = () => modal.style.display = "none";
 
-  renderProducts();
+  // Nút Đóng Modal (Đã sửa selector ở trên)
+  if(closeBtn) {
+      closeBtn.onclick = () => {
+          modal.style.display = "none";
+      }
+  }
+
+  // Click ngoài biên để đóng
+  window.addEventListener("click", (e) => {
+      if (e.target === modal) {
+          modal.style.display = "none";
+      }
+  });
+
+  // Init
+  // Kiểm tra xem tab hiện tại có phải products không để render
+  const activeTab = localStorage.getItem("activeTab");
+  if (activeTab === 'products') {
+      renderProducts();
+  }
+  
+  // Lắng nghe sự kiện click vào tab Products để render lại (vì userManage chỉ show div)
+  const productTabBtn = document.querySelector('li[data-tab="products"]');
+  if(productTabBtn) {
+      productTabBtn.addEventListener('click', () => {
+          renderProducts();
+      });
+  }
 });

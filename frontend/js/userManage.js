@@ -24,15 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------- CHUYỂN TAB -------------------
+  // Mặc định khi F5: Active tab đầu tiên (Users) và ẩn các tab khác
+  const defaultTab = "users";
+  
+  // Reset trạng thái hiển thị khi load trang
+  tabs.forEach((t) => t.classList.remove("active"));
+  tabContents.forEach((tc) => (tc.style.display = "none"));
+
+  // Kích hoạt tab mặc định (Users)
+  document.querySelector(`.sidebar ul li[data-tab="${defaultTab}"]`).classList.add("active");
+  document.getElementById(defaultTab).style.display = "block";
+
+  // Xử lý sự kiện click chuyển tab
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
+      // 1. Xóa active cũ
       tabs.forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
+      tabContents.forEach((tc) => (tc.style.display = "none"));
 
+      // 2. Active tab được nhấn
+      tab.classList.add("active");
       const target = tab.dataset.tab;
-      tabContents.forEach(
-        (tc) => (tc.style.display = tc.id === target ? "block" : "none")
-      );
+      document.getElementById(target).style.display = "block";
+      
+      // 3. Nếu chuyển sang tab sản phẩm hoặc danh mục thì load lại dữ liệu cho mới
+      if (target === 'products' && typeof renderProducts === 'function') {
+          renderProducts();
+      }
+      if (target === 'categories' && typeof renderCategories === 'function') {
+          renderCategories();
+      }
     });
   });
 

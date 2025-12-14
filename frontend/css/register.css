@@ -69,3 +69,49 @@ button:hover {
 .login-link a:hover {
   text-decoration: underline;
 }
+
+/* ... Code cũ của bạn giữ nguyên ... */
+
+/* --- BẮT ĐẦU PHẦN THÊM MỚI --- */
+
+/* 1. Tắt mắt mặc định của trình duyệt */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* 2. Cấu hình ô input để không vỡ khung khi thêm padding */
+input {
+  /* Các thuộc tính cũ giữ nguyên */
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  
+  /* Thêm dòng này để input tính toán kích thước chuẩn */
+  box-sizing: border-box; 
+}
+
+/* 3. Wrapper bao quanh ô mật khẩu */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 40px; /* Chừa chỗ cho icon */
+}
+
+/* 4. Định vị icon con mắt */
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%; /* Hoặc 55% nếu muốn thấp xuống chút */
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+  z-index: 2;
+}
+/* --- KẾT THÚC PHẦN THÊM MỚI --- */
