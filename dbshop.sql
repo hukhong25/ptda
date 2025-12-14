@@ -24,9 +24,6 @@ CREATE TABLE Size (
     tenSize VARCHAR(50) NOT NULL
 );
 
--- Insert dữ liệu mẫu Size
-INSERT INTO Size (tenSize) VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL'), ('Freesize');
-
 -- 4. Bảng SẢN PHẨM (Bỏ cột soLuong tổng)
 CREATE TABLE SanPham (
     maSP INT AUTO_INCREMENT PRIMARY KEY,

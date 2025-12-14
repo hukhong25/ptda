@@ -61,17 +61,57 @@ export const createOrder = (req, res) => {
 export const getMyOrders = (req, res) => {
     const userId = req.user.id; 
 
-    // Query lấy đơn hàng từ bảng DonHang
+    // SỬ DỤNG BACKTICK CHO TÊN BẢNG ĐỂ TRÁNH LỖI TỪ KHÓA
     const query = `
-        SELECT * FROM DonHang 
-        WHERE id = ? 
-        ORDER BY ngayDat DESC
+        SELECT 
+            d.maDonHang, d.ngayDat, d.trangThai, d.tongTien, d.tenNguoiNhan, d.sdt, d.diaChiGiaoHang, d.ghiChu,
+            c.maSP, c.soLuongMua, c.giaMua,
+            s.tenSP, s.anhSP,
+            sz.tenSize
+        FROM DonHang d
+        LEFT JOIN ChiTietDonHang c ON d.maDonHang = c.maDonHang
+        LEFT JOIN SanPham s ON c.maSP = s.maSP
+        LEFT JOIN \`Size\` sz ON c.maSize = sz.maSize
+        WHERE d.id = ? 
+        ORDER BY d.ngayDat DESC
     `;
 
     db.query(query, [userId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: "Lỗi khi lấy danh sách đơn hàng", error: err });
+            console.error("❌ Lỗi SQL getMyOrders:", err); // Quan trọng: Xem lỗi này trong Terminal
+            return res.status(500).json({ message: "Lỗi Server khi lấy đơn hàng", error: err.message });
         }
-        res.status(200).json(results);
+
+        // Gom nhóm dữ liệu: Vì query trả về nhiều dòng cho 1 đơn hàng (do join sản phẩm)
+        // nên cần gom lại thành 1 object đơn hàng chứa mảng items
+        const ordersMap = {};
+
+        results.forEach(row => {
+            if (!ordersMap[row.maDonHang]) {
+                ordersMap[row.maDonHang] = {
+                    maDonHang: row.maDonHang,
+                    ngayDat: row.ngayDat,
+                    trangThai: row.trangThai,
+                    tongTien: row.tongTien,
+                    tenNguoiNhan: row.tenNguoiNhan,
+                    sdt: row.sdt,
+                    diaChiGiaoHang: row.diaChiGiaoHang,
+                    items: []
+                };
+            }
+            // Chỉ push sản phẩm nếu dòng đó có dữ liệu sản phẩm (tránh null)
+            if (row.maSP) {
+                ordersMap[row.maDonHang].items.push({
+                    tenSP: row.tenSP,
+                    anhSP: row.anhSP,
+                    tenSize: row.tenSize,
+                    soLuongMua: row.soLuongMua,
+                    giaMua: row.giaMua
+                });
+            }
+        });
+
+        // Trả về mảng các đơn hàng
+        res.status(200).json(Object.values(ordersMap));
     });
 };

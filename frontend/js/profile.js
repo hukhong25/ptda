@@ -126,35 +126,74 @@ async function removeAddress(id) {
 }
 
 async function fetchOrders(token) {
+    const orderListDiv = document.getElementById("order-list");
+    orderListDiv.innerHTML = "<p>Đang tải đơn hàng...</p>";
+
     try {
         const response = await fetch("http://localhost:3000/api/orders/my-orders", {
             headers: { "Authorization": `Bearer ${token}` }
         });
-        const orders = await response.json();
-        const orderListDiv = document.getElementById("order-list");
+        
+        // Nếu response không OK, ném lỗi ra catch
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.message || response.statusText);
+        }
 
-        if (response.ok && orders.length > 0) {
-            orderListDiv.innerHTML = orders.map(order => `
-                <div class="order-item">
-                    <div class="order-header">
-                        <span><strong>Đơn hàng:</strong> #${order.maDonHang}</span>
-                        <span class="status-badge status-${order.trangThai.toLowerCase()}">${order.trangThai}</span>
+        const orders = await response.json();
+
+        if (orders.length > 0) {
+            orderListDiv.innerHTML = orders.map(order => {
+                // Render danh sách sản phẩm trong đơn
+                const productsHtml = order.items.map(item => `
+                    <div style="display: flex; gap: 15px; padding: 10px 0; border-top: 1px solid #f0f0f0;">
+                        <img src="../Asset/${item.anhSP}" alt="${item.tenSP}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; font-size: 14px;">${item.tenSP}</div>
+                            <div style="font-size: 13px; color: #777;">
+                                Phân loại: ${item.tenSize || 'N/A'} | x${item.soLuongMua}
+                            </div>
+                            <div style="font-size: 14px; color: #ee4d2d; margin-top: 2px;">
+                                ${Number(item.giaMua).toLocaleString('vi-VN')} đ
+                            </div>
+                        </div>
                     </div>
+                `).join('');
+
+                // Render tổng thể đơn hàng
+                return `
+                <div class="order-item" style="background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;">
+                    <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 5px;">
+                        <div>
+                            <strong>Đơn hàng #${order.maDonHang}</strong>
+                            <br><span style="font-size: 12px; color: #888;">${new Date(order.ngayDat).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <span class="status-badge status-${(order.trangThai || 'pending').toLowerCase()}" 
+                              style="padding: 4px 8px; border-radius: 4px; font-size: 12px; height: fit-content; background: #e0f2f1; color: #00695c;">
+                            ${order.trangThai}
+                        </span>
+                    </div>
+                    
                     <div class="order-body">
-                        <p>Ngày đặt: ${new Date(order.ngayDat).toLocaleDateString('vi-VN')}</p>
-                        <p>Người nhận: ${order.tenNguoiNhan} - ${order.sdt}</p>
-                        <p>Địa chỉ: ${order.diaChiGiaoHang}</p>
+                        ${productsHtml}
                     </div>
-                    <div class="order-total">
-                        Tổng tiền: ${Number(order.tongTien).toLocaleString('vi-VN')} đ
+
+                    <div class="order-footer" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #555;">Người nhận: ${order.tenNguoiNhan} (${order.sdt})</span>
+                        <div class="order-total" style="font-size: 15px; font-weight: bold; color: #ee4d2d;">
+                            Thành tiền: ${Number(order.tongTien).toLocaleString('vi-VN')} đ
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         } else {
-            orderListDiv.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
+            orderListDiv.innerHTML = "<p style='text-align:center'>Bạn chưa có đơn hàng nào.</p>";
         }
     } catch (error) {
         console.error("Lỗi orders:", error);
+        // Hiển thị lỗi cụ thể ra màn hình để dễ debug
+        orderListDiv.innerHTML = `<p style='color:red; text-align:center;'>Có lỗi xảy ra: ${error.message}</p>`;
     }
 }
 
