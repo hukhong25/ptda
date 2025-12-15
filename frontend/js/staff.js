@@ -1,45 +1,56 @@
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user")); // Lấy thông tin user để check role
-
-    // 1. Kiểm tra đăng nhập & quyền Staff
+    const user = JSON.parse(localStorage.getItem("user")); 
+    const savedTab = localStorage.getItem('currentStaffTab') || 'tabKho';
+    // 1. Kiểm tra đăng nhập
     if (!token) {
         alert("Bạn chưa đăng nhập!");
         window.location.href = "/html/login.html";
         return;
     }
-    // (Optional) Kiểm tra role nếu cần
-    // if (user.role !== 'staff' && user.role !== 'admin') { ... }
 
     document.getElementById("staffName").innerText = user ? `Xin chào, ${user.ten}` : "Staff";
 
-    // 2. Chức năng Đăng xuất
+    // 2. Đăng xuất
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
             localStorage.removeItem("user");
             localStorage.removeItem("token");
-            window.location.href = "/html/index.html"; // Về trang chủ thay vì login
+            window.location.href = "/html/index.html"; 
         });
     }
 
     // ================== QUẢN LÝ TAB ==================
     window.switchTab = function(tabId, element) {
+        // 1. Lưu tab hiện tại vào localStorage
+        localStorage.setItem('currentStaffTab', tabId);
+
         // Ẩn tất cả tab content
         document.querySelectorAll('.tab-content').forEach(div => div.style.display = 'none');
         // Bỏ active sidebar
         document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
         
         // Hiện tab được chọn
-        document.getElementById(tabId).style.display = 'block';
-        element.classList.add('active');
+        const tabElement = document.getElementById(tabId);
+        if (tabElement) tabElement.style.display = 'block';
+
+        // Active class cho sidebar
+        // Nếu có element (click chuột) thì dùng nó
+        if (element) {
+            element.classList.add('active');
+        } else {
+            // Nếu không (F5 refresh), tìm thẻ li trong sidebar có onclick chứa tabId này
+            const sidebarItem = document.querySelector(`.sidebar li[onclick*="'${tabId}'"]`);
+            if (sidebarItem) sidebarItem.classList.add('active');
+        }
 
         // Load dữ liệu tương ứng
         if (tabId === 'tabKho') renderKho();
         if (tabId === 'tabDonHang') renderStaffOrders();
     };
 
-    // ================== LOGIC KHO HÀNG (Giữ nguyên logic cũ) ==================
+    // ================== LOGIC KHO HÀNG ==================
     let currentEditingProductId = null;
 
     async function renderKho() {
@@ -86,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error(err); }
     }
 
-    // Sự kiện nút Sửa Kho (Giữ nguyên)
     function attachEditEvents() {
         document.querySelectorAll(".edit-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
@@ -111,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Lưu Kho (Giữ nguyên)
     const saveBtn = document.getElementById("saveEditBtn");
     if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
@@ -136,26 +145,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Modal Events
     document.getElementById("closeModal").onclick = () => document.getElementById("editModal").style.display = "none";
     const searchBtn = document.getElementById("searchBtn");
     if (searchBtn) searchBtn.onclick = () => renderKho();
 
 
-    // ================== LOGIC ĐƠN HÀNG ==================
+    // ================== LOGIC ĐƠN HÀNG (ĐÃ SỬA NGÀY GIỜ) ==================
     
     async function renderStaffOrders() {
         const tbody = document.getElementById("orderTableBody");
         tbody.innerHTML = "<tr><td colspan='6'>Đang tải...</td></tr>";
 
         try {
-            const res = await fetch("http://localhost:3000/api/orders/manage/all", {
+            // FIX: Đúng đường dẫn API (bỏ /manage)
+            const res = await fetch("http://localhost:3000/api/orders/all", {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const orders = await res.json();
 
             tbody.innerHTML = "";
-            if (orders.length === 0) {
+            if (!orders || orders.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='6' style='text-align:center'>Chưa có đơn hàng nào</td></tr>";
                 return;
             }
@@ -163,23 +172,24 @@ document.addEventListener("DOMContentLoaded", () => {
             orders.forEach(order => {
                 const tr = document.createElement("tr");
                 
-                // Build list sản phẩm
                 const itemsHtml = order.items.map(i => 
                     `<div style="font-size:13px;">- ${i.tenSP} (${i.tenSize}) x${i.soLuongMua}</div>`
                 ).join("");
 
-                // Dropdown trạng thái
                 const statusSelect = `
                     <select onchange="updateStatus(${order.maDonHang}, this.value)" 
                             class="status-select status-${getStatusClass(order.trangThai)}"
                             ${order.trangThai === 'Đã hủy' ? 'disabled' : ''}>
-                        <option value="Pending" ${order.trangThai === 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
+                        <option value="Chờ xác nhận" ${order.trangThai === 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
                         <option value="Đang xử lý" ${order.trangThai === 'Đang xử lý' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="Đang giao" ${order.trangThai === 'Đang giao' ? 'selected' : ''}>Đang giao</option>
                         <option value="Hoàn thành" ${order.trangThai === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
                         <option value="Đã hủy" ${order.trangThai === 'Đã hủy' ? 'selected' : ''}>Hủy đơn</option>
                     </select>
                 `;
+
+                // [Thay đổi ở đây]: toLocaleString() thay vì toLocaleDateString()
+                const formattedDate = new Date(order.ngayDat).toLocaleString('vi-VN');
 
                 tr.innerHTML = `
                     <td>#${order.maDonHang}</td>
@@ -188,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <small>${order.sdt}</small><br>
                         <small style="color:#777; font-style:italic;">${order.diaChiGiaoHang}</small>
                     </td>
-                    <td>${new Date(order.ngayDat).toLocaleDateString('vi-VN')}</td>
+                    <td>${formattedDate}</td> 
                     <td>${itemsHtml}</td>
                     <td style="color:red; font-weight:bold;">${Number(order.tongTien).toLocaleString('vi-VN')} đ</td>
                     <td>${statusSelect}</td>
@@ -202,10 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Helper class màu sắc
     function getStatusClass(status) {
         switch(status) {
-            case 'Chờ xử lý': return 'pending';
+            case 'Chờ xác nhận': return 'pending';
             case 'Đang xử lý': return 'processing';
             case 'Đang giao': return 'shipping';
             case 'Hoàn thành': return 'completed';
@@ -214,17 +223,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Hàm global để gọi từ onchange trong HTML
     window.updateStatus = async function(orderId, newStatus) {
         if (newStatus === 'Đã hủy') {
             if (!confirm("Hủy đơn hàng sẽ hoàn lại số lượng tồn kho. Bạn có chắc chắn?")) {
-                renderStaffOrders(); // Reset lại select nếu chọn Cancel
+                renderStaffOrders(); 
                 return;
             }
         }
 
         try {
-            const res = await fetch(`http://localhost:3000/api/orders/manage/${orderId}/status`, {
+            // FIX: Đúng đường dẫn API (bỏ /manage)
+            const res = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -236,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (res.ok) {
                 alert(data.message);
-                renderStaffOrders(); // Render lại để cập nhật màu sắc và disable nếu hủy
+                renderStaffOrders();
             } else {
                 alert("Lỗi: " + data.message);
             }
@@ -246,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Chạy lần đầu: Load kho
     renderKho();
+    
+    switchTab(savedTab);
 });
