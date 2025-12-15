@@ -158,6 +158,17 @@ async function fetchOrders(token) {
                     </div>
                 `).join('');
 
+                // [MỚI] Kiểm tra nếu đơn hàng "Chờ xác nhận" thì hiện nút Hủy
+                let actionButton = '';
+                if (order.trangThai === 'Chờ xác nhận') {
+                    actionButton = `
+                        <button onclick="cancelOrder(${order.maDonHang})" 
+                                style="padding: 6px 12px; background: #fff; color: #555; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 13px; margin-left: 10px; transition: 0.2s;">
+                            Hủy đơn hàng
+                        </button>
+                    `;
+                }
+
                 return `
                 <div class="order-item" style="background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;">
                     <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 5px;">
@@ -165,7 +176,7 @@ async function fetchOrders(token) {
                             <strong>Đơn hàng #${order.maDonHang}</strong>
                             <br><span style="font-size: 12px; color: #888;">${new Date(order.ngayDat).toLocaleString('vi-VN')}</span>
                         </div>
-                        <span class="status-badge status-${(order.trangThai || 'pending').toLowerCase()}" 
+                        <span class="status-badge" 
                               style="padding: 4px 8px; border-radius: 4px; font-size: 12px; height: fit-content; background: #e0f2f1; color: #00695c;">
                             ${order.trangThai}
                         </span>
@@ -177,8 +188,11 @@ async function fetchOrders(token) {
 
                     <div class="order-footer" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 13px; color: #555;">Người nhận: ${order.tenNguoiNhan} (${order.sdt})</span>
-                        <div class="order-total" style="font-size: 15px; font-weight: bold; color: #ee4d2d;">
-                            Thành tiền: ${Number(order.tongTien).toLocaleString('vi-VN')} đ
+                        <div style="display: flex; align-items: center;">
+                            <div class="order-total" style="font-size: 15px; font-weight: bold; color: #ee4d2d; margin-right: 10px;">
+                                Thành tiền: ${Number(order.tongTien).toLocaleString('vi-VN')} đ
+                            </div>
+                            ${actionButton}
                         </div>
                     </div>
                 </div>
@@ -213,7 +227,37 @@ function switchTab(tabName) {
     const activeLi = document.querySelector(`.profile-menu li[onclick*="'${tabName}'"]`);
     if (activeLi) activeLi.classList.add('active');
 }
+// ================== [MỚI] HÀM HỦY ĐƠN HÀNG ==================
+async function cancelOrder(orderId) {
+    if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return;
 
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Vui lòng đăng nhập lại!");
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ trangThai: "Đã hủy" })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Đã hủy đơn hàng thành công!");
+            // Tải lại danh sách đơn hàng
+            fetchOrders(token);
+        } else {
+            alert(data.message || "Lỗi khi hủy đơn hàng");
+        }
+    } catch (error) {
+        console.error("Lỗi hủy đơn:", error);
+        alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+    }
+}
 function getStatusClass(status) {
     if (status === 'Đã giao' || status === 'completed') return 'status-completed';
     if (status === 'Đã hủy' || status === 'cancelled') return 'status-cancelled';
