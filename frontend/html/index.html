@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shop Quần Áo</title>
     <link rel="stylesheet" href="../css/home.css" />
+    
   </head>
   <body>
     <!-- HEADER -->
@@ -25,11 +26,6 @@
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
           <span id="userName">User</span>
-          <div class="dropdown" id="dropdownMenu">
-            <a href="/profile.html">Thông tin cá nhân</a>
-            <a href="/orders.html">Đơn hàng</a>
-            <a id="logoutBtn">Đăng xuất</a>
-          </div>
         </div>
 
         <!-- Giỏ hàng -->
@@ -38,14 +34,18 @@
         </div>
       </div>
     </header>
-
+    <section class="banner-section">
+    <div class="banner-container">
+            <img src="../Asset/banner.jpg" alt="Banner Khuyến Mãi" class="main-banner">
+        </div>
+    </section>
     <!-- DANH SÁCH SẢN PHẨM -->
     <main class="container">
       <h1>Danh sách sản phẩm</h1>
       <div id="productList" class="product-list"></div>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" id="footer-contact">
       <div class="container footer-content">
         <div class="footer-col">
           <h3>Về chúng tôi</h3>

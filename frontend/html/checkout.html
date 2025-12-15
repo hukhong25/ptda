@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/home.css">
     <link rel="stylesheet" href="../css/cart.css">
     <link rel="stylesheet" href="../css/checkout.css">
+    <link rel="stylesheet" href="../css/search.css" />
 </head>
 <body>
     <!-- HEADER -->
@@ -16,7 +17,10 @@
       <div class="header-right">
         <button id="loginBtn">Đăng nhập</button>
         <button id="registerBtn">Đăng ký</button>
-
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+            <button id="searchBtn">Tìm</button>
+        </div>
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
           <span id="userName">User</span>
@@ -83,6 +87,17 @@
             <button class="btn-confirm" id="btnPlaceOrder">ĐẶT HÀNG</button>
         </div>
     </div>
+    <footer class="footer" id="footer-contact">
+      <div class="container footer-content">
+        <div class="footer-col">
+          <h3>Về chúng tôi</h3>
+          <p>Chuyên cung cấp quần áo thời trang chất lượng cao cho giới trẻ.</p>
+        </div>
+        <div class="copyright">
+          <p>&copy; 2025 FashionStore. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
     <script src="../js/Header.js"></script>
     <script src="../js/checkout.js"></script>
 </body>
