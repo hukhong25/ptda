@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.user.role === "admin") {
         window.location.href = "/html/admin.html";
       } else if (data.user.role === "staff") {
-        window.location.href = "/html/qlKho.html";
+        window.location.href = "/html/staff.html";
       } else {
         window.location.href = "/html/index.html"; // khách hoặc user
       }

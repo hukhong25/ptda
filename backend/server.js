@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -8,7 +7,7 @@ import khoRoutes from "./routes/kho.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
-import cors from "cors";
+import cors from "cors";// thu vien cors de chay live server
 
 const app = express();
 
@@ -55,3 +54,6 @@ app.use("/uploads", express.static(path.join(__dirname, "../frontend/Asset")));
 app.listen(3000, () => {
   console.log("🚀 Server chạy tại http://localhost:3000");
 });
+
+
+// tắt bằng terminal:  taskkill /F /IM node.exe

@@ -2,6 +2,7 @@ import Product from "../models/Product.js";
 import path from "path";
 import fs from "fs";
 
+// ... (Giữ nguyên getProducts) ...
 export const getProducts = (req, res) => {
   Product.getAll((err, result) => {
     if (err) {
@@ -12,6 +13,7 @@ export const getProducts = (req, res) => {
   });
 };
 
+// ... (SỬA HÀM getProductById) ...
 export const getProductById = (req, res) => {
   const { id } = req.params;
   Product.getById(id, (err, result) => {
@@ -26,30 +28,33 @@ export const getProductById = (req, res) => {
         gia: firstRow.gia,
         moTa: firstRow.moTa,
         anhSP: firstRow.anhSP,
-        sizes: []
+        sizes: [] // Chúng ta sẽ chứa danh sách tên size: ['S', 'M', 'L']
     };
     
-    // Tính tổng số lượng để hiển thị ra form sửa
+   // --- SỬA ĐOẠN NÀY ---
     let totalStock = 0;
     result.forEach(row => {
-        if (row.maSize) {
+        if (row.tenSize) { 
+            // Thay vì chỉ push tên, hãy push cả OBJECT chứa thông tin size
+            // Frontend cần maSize để thêm vào giỏ, và soLuongTon để kiểm tra kho
             product.sizes.push({
-                maSize: row.maSize,
-                tenSize: row.tenSize,
-                soLuongTon: row.soLuongTon
+                maSize: row.maSize,         // Cần cái này để thêm vào giỏ hàng
+                tenSize: row.tenSize,       // Cần cái này để hiển thị tên (S, M)
+                soLuongTon: row.soLuongTon  // Cần cái này để check disable nút nếu hết hàng
             });
             totalStock += row.soLuongTon;
         }
     });
-    // Gán soLuong tổng vào product để frontend hiển thị trong ô input
-    // Vì yêu cầu là "các size mặc định", ta lấy số lượng của 1 size bất kỳ làm đại diện nếu muốn đồng bộ, 
-    // hoặc lấy trung bình. Ở đây để đơn giản ta lấy số lượng của size đầu tiên (vì logic là set all giống nhau).
-    product.soLuong = product.sizes.length > 0 ? product.sizes[0].soLuongTon : 0;
+    // --------------------
+
+    // Lấy số lượng đại diện
+    product.soLuong = result.length > 0 && result[0].soLuongTon ? result[0].soLuongTon : 0;
 
     res.json({ product });
   });
 };
 
+// ... (Giữ nguyên getProductCategories) ...
 export const getProductCategories = (req, res) => {
   const { id } = req.params;
   Product.getCategories(id, (err, result) => {
@@ -58,9 +63,10 @@ export const getProductCategories = (req, res) => {
   });
 };
 
-// ====================== THÊM SẢN PHẨM ===========================
+// ====================== THÊM SẢN PHẨM (ĐÃ SỬA) ===========================
 export const createProduct = (req, res) => {
-  const { tenSP, gia, moTa, categories, soLuong } = req.body; 
+  // Lấy thêm biến sizes từ body
+  const { tenSP, gia, moTa, categories, soLuong, sizes } = req.body; 
   
   if (!tenSP || !gia) {
     return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -80,15 +86,22 @@ export const createProduct = (req, res) => {
     const productId = result.insertId;
     const stockQty = parseInt(soLuong) || 0;
 
-    // SỬA: Tạo kho mặc định cho 5 size (ID 1-5) với số lượng nhập vào
-    const inventoryData = [1, 2, 3, 4, 5].map(id => ({ 
-        maSize: id, 
-        soLuongTon: stockQty 
-    }));
-    
-    Product.initInventory(productId, inventoryData, (err) => {
-        if(err) console.error("Lỗi tạo kho:", err);
-    });
+    // --- PHẦN SỬA ĐỔI QUAN TRỌNG: XỬ LÝ SIZE ---
+    // Thay vì fix cứng [1,2,3,4,5], ta lấy từ biến sizes frontend gửi lên
+    if (sizes) {
+        let sizeArray = [];
+        try { 
+            sizeArray = JSON.parse(sizes); // Chuyển chuỗi '["S", "M"]' thành mảng
+        } catch (e) { sizeArray = []; }
+
+        if (Array.isArray(sizeArray) && sizeArray.length > 0) {
+            // Gọi hàm Model mới để lưu vào ChiTietSanPham
+            Product.addSizeByName(productId, sizeArray, stockQty, (err) => {
+                if (err) console.error("Lỗi tạo kho size:", err);
+            });
+        }
+    }
+    // ---------------------------------------------
 
     if (categories) {
       let categoryIds = [];
@@ -102,10 +115,11 @@ export const createProduct = (req, res) => {
   });
 };
 
-// ====================== CẬP NHẬT SẢN PHẨM ===========================
+// ====================== CẬP NHẬT SẢN PHẨM (ĐÃ SỬA) ===========================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { tenSP, gia, moTa, categories, oldImage, soLuong } = req.body;
+  // Lấy thêm sizes
+  const { tenSP, gia, moTa, categories, oldImage, soLuong, sizes } = req.body;
 
   if (!tenSP || !gia) {
     return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -130,11 +144,32 @@ export const updateProduct = (req, res) => {
       return res.status(500).json({ message: "Lỗi khi cập nhật sản phẩm" });
     }
 
-    // SỬA: Cập nhật số lượng cho tất cả size trong kho
     const stockQty = parseInt(soLuong) || 0;
-    Product.updateInventory(id, stockQty, (err) => {
-        if(err) console.error("Lỗi update kho:", err);
-    });
+
+    // --- PHẦN SỬA ĐỔI QUAN TRỌNG: UPDATE SIZE ---
+    if (sizes) {
+        let sizeArray = [];
+        try { sizeArray = JSON.parse(sizes); } catch (e) {}
+
+        // 1. Xóa hết size cũ của SP này trong bảng ChiTietSanPham
+        Product.removeAllSizes(id, (err) => {
+            if (!err) {
+                 // 2. Thêm lại size mới user vừa chọn
+                 if (Array.isArray(sizeArray) && sizeArray.length > 0) {
+                    Product.addSizeByName(id, sizeArray, stockQty, (err) => {
+                        if(err) console.error("Lỗi thêm lại size mới:", err);
+                    });
+                 }
+            }
+        });
+    } else {
+        // Nếu không gửi size (hoặc gửi rỗng), có thể logic của bạn là giữ nguyên
+        // hoặc cập nhật lại số lượng tồn kho cho các size hiện có
+        Product.updateInventory(id, stockQty, (err) => {
+             if(err) console.error("Lỗi update kho:", err);
+        });
+    }
+    // -----------------------------------------------
 
     if (categories) {
       let categoryIds = [];
@@ -150,6 +185,7 @@ export const updateProduct = (req, res) => {
   });
 };
 
+// ... (Giữ nguyên deleteProduct) ...
 export const deleteProduct = (req, res) => {
   const { id } = req.params;
   Product.getById(id, (err, result) => {

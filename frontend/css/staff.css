@@ -1,0 +1,318 @@
+/* ================= GLOBAL RESET ================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+    /* Trả về display block để khớp với layout cũ */
+    display: block; 
+    height: 100vh;
+}
+
+/* ================= HEADER ================= */
+.admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #ee4d2d; /* Đổi thành MÀU CAM chủ đạo */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header-right span {
+    font-weight: 600;
+    margin-right: 15px;
+}
+
+.header-right button {
+    padding: 6px 15px;
+    background-color: #fff; /* Nền trắng */
+    color: #ee4d2d; /* Chữ cam */
+    border: 1px solid #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.header-right button:hover {
+    background-color: #fceee9; /* Hover màu cam nhạt */
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    width: 240px;
+    background-color: white; /* Giữ nền tối cho Sidebar để dễ nhìn */
+    color: #ecf0f1;
+    position: fixed;
+    top: 60px; /* Nằm dưới header */
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding-top: 10px;
+}
+
+.sidebar ul li {
+    padding: 15px 20px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: bold;
+    color: #555;
+}
+
+.sidebar ul li:hover {
+    background: linear-gradient(90deg, #e91e63, #ff4081);
+    color: #fff;
+}
+
+/* Active Tab: Màu cam */
+.sidebar ul li.active {
+    background: linear-gradient(90deg, #e91e63, #ff4081);
+    border-left-color: #ee4d2d; /* Viền trái màu cam */
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ================= CONTENT AREA ================= */
+.content {
+    margin-left: 240px; /* Đẩy nội dung sang phải bằng chiều rộng sidebar */
+    padding: 85px 25px 25px 25px; /* Padding top lớn hơn để bù header */
+    width: calc(100% - 240px);
+    overflow-y: auto;
+}
+
+.tab-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: #ee4d2d; /* Tiêu đề màu cam */
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* ================= SEARCH BOX ================= */
+.search-box {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-box input:focus {
+    border-color: #ee4d2d;
+}
+
+.search-box button {
+    padding: 8px 20px;
+    background-color: #ee4d2d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.search-box button:hover {
+    background-color: #d74328;
+}
+
+/* ================= TABLES ================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: #f8f9fa;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+th {
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+tr:hover {
+    background-color: #fffbfb; /* Hover màu rất nhạt */
+}
+
+td img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+/* ================= BADGES & STATUS ================= */
+.size-badge {
+    display: inline-block;
+    background-color: #fceee9; /* Cam nhạt */
+    color: #333;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 3px;
+    border: 1px solid #f5c6bb;
+}
+
+.size-badge b {
+    color: #ee4d2d;
+}
+
+/* Edit Button */
+.edit-btn {
+    background-color: #17a2b8; /* Màu xanh info (giữ nguyên hoặc đổi cam tùy ý) */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.edit-btn:hover { opacity: 0.9; }
+
+/* Status Select */
+.status-select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Màu trạng thái */
+.status-pending { color: #d35400; background: #fff3e0; border-color: #ffe0b2; }
+.status-processing { color: #2980b9; background: #e3f2fd; border-color: #bbdefb; }
+.status-shipping { color: #8e44ad; background: #f3e5f5; border-color: #e1bee7; }
+.status-completed { color: #27ae60; background: #e8f5e9; border-color: #c8e6c9; }
+.status-cancelled { color: #c0392b; background: #ffebee; border-color: #ffcdd2; }
+
+/* ================= MODAL ================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-top: 4px solid #ee4d2d; /* Viền trên màu cam */
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close:hover { color: #333; }
+
+.input-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.qty-input {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.qty-input:focus { border-color: #ee4d2d; outline: none; }
+
+.btn-primary {
+    background-color: #ee4d2d;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #d74328;
+}

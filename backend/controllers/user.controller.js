@@ -13,7 +13,7 @@ export const getAllUsers = (req, res) => {
   });
 };
 
-// ====================== LẤY PROFILE (Kèm danh sách địa chỉ) ===========================
+// ====================== LẤY PROFILE (SỬA ĐỂ LẤY THÊM CỘT macDinh) ===========================
 export const getProfile = (req, res) => {
   const userId = req.user.id;
 
@@ -26,12 +26,12 @@ export const getProfile = (req, res) => {
 
     const user = userResults[0];
 
-    // 2. Lấy danh sách địa chỉ của User này
-    const queryAddr = "SELECT maDiaChi, tenDiaChi FROM DiaChi WHERE id = ? ORDER BY maDiaChi DESC";
+    // 2. Lấy danh sách địa chỉ (SỬA: Thêm cột macDinh vào SELECT)
+    const queryAddr = "SELECT maDiaChi, tenDiaChi, macDinh FROM DiaChi WHERE id = ? ORDER BY macDinh DESC, maDiaChi DESC";
     
     db.query(queryAddr, [userId], (err, addrResults) => {
       if (err) return res.status(500).json({ message: "Lỗi lấy địa chỉ", error: err });
-      
+
       // Gán danh sách địa chỉ vào object user trả về
       user.addresses = addrResults; 
       res.json(user);
@@ -77,6 +77,28 @@ export const deleteAddress = (req, res) => {
     db.query(query, [id, userId], (err, result) => {
         if (err) return res.status(500).json({ message: "Lỗi xóa địa chỉ", error: err });
         res.json({ message: "Đã xóa địa chỉ" });
+    });
+};
+
+// ================== [MỚI] THÊM API SET DEFAULT ADDRESS ==================
+export const setDefaultAddress = (req, res) => {
+    const userId = req.user.id; // Lấy ID user từ token
+    const addressId = req.params.id; // Lấy ID địa chỉ từ URL
+
+    if (!addressId) return res.status(400).json({ message: "Thiếu ID địa chỉ" });
+
+    User.setDefaultAddress(userId, addressId, (err, result) => {
+        if (err) {
+            console.error("Lỗi set default address:", err);
+            return res.status(500).json({ message: "Lỗi server" });
+        }
+        
+        // Kiểm tra xem có dòng nào được update không (nếu = 0 nghĩa là ID địa chỉ sai hoặc không phải của user này)
+        if (result.affectedRows === 0) {
+             return res.status(404).json({ message: "Không tìm thấy địa chỉ hoặc bạn không có quyền" });
+        }
+
+        res.json({ message: "Đã đặt làm địa chỉ mặc định thành công" });
     });
 };
 

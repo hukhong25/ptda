@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard Nhân Viên</title> <link rel="stylesheet" href="../css/staff.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <div class="logo">Staff Dashboard</div> <div class="header-right">
+        <span id="staffName" style="margin-right: 15px; font-weight: bold;"></span>
+        <button id="logoutBtn">Đăng xuất</button>
+      </div>
+    </header>
+
+    <div class="sidebar">
+      <ul>
+        <li class="active" onclick="switchTab('tabKho', this)">📦 Quản lý Kho</li>
+        <li onclick="switchTab('tabDonHang', this)">🧾 Quản lý Đơn hàng</li>
+      </ul>
+    </div>
+
+    <div class="content">
+      
+      <div id="tabKho" class="tab-content" style="display: block;">
+        <h2 style="margin-bottom: 15px;">Danh sách sản phẩm tồn kho</h2>
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="Tìm tên sản phẩm..." />
+          <button id="searchBtn">Tìm</button>
+        </div>
+        <table id="khoTable">
+          <thead>
+            <tr>
+              <th>Mã SP</th> <th>Ảnh</th> <th>Tên sản phẩm</th> <th>Tổng tồn kho</th> <th>Chi tiết Size</th> <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="tabDonHang" class="tab-content" style="display: none;">
+        <h2 style="margin-bottom: 15px;">Danh sách đơn hàng</h2>
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Mã ĐH</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div id="editModal" class="modal">
+      <div class="modal-content" style="max-width: 400px;">
+        <span id="closeModal" class="close">&times;</span>
+        <h3 id="modalTitle">Cập nhật kho</h3>
+        <div id="sizeInputsContainer" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="saveEditBtn" class="btn-primary">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/staff.js"></script>
+  </body>
+</html>

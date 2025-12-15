@@ -1,5 +1,6 @@
-DROP DATABASE IF EXISTS clothes_db;
-CREATE DATABASE clothes_db;
+# DROP DATABASE IF EXISTS clothes_db;
+# CREATE DATABASE clothes_db;
+#dấu thăng là comment ae muốn chạy lại bảng thì xóa dấu # đi nhé
 USE clothes_db;
 
 -- 1. Bảng USERS
@@ -24,6 +25,7 @@ CREATE TABLE Size (
     tenSize VARCHAR(50) NOT NULL
 );
 
+
 -- 4. Bảng SẢN PHẨM (Bỏ cột soLuong tổng)
 CREATE TABLE SanPham (
     maSP INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,6 +34,7 @@ CREATE TABLE SanPham (
     moTa TEXT,
     anhSP VARCHAR(255)
 );
+
 
 -- 5. Bảng CHI TIẾT SẢN PHẨM (Quản lý kho theo Size) (MỚI)
 CREATE TABLE ChiTietSanPham (
@@ -139,9 +142,15 @@ CREATE TABLE ChiTietDonHang (
     FOREIGN KEY (maSP) REFERENCES SanPham(maSP),
     FOREIGN KEY (maSize) REFERENCES Size(maSize)
 );
-INSERT INTO Size (tenSize) VALUES 
-('S'), 
-('M'), 
-('L'), 
-('XL'), 
-('2XL');
+INSERT INTO Size (tenSize) VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL'), ('Freesize');
+
+select * from users;
+select * from diachi;
+ALTER TABLE DiaChi ADD COLUMN macDinh TINYINT(1) DEFAULT 0;
+
+UPDATE users 
+SET role = 'ADMIN' 
+WHERE id = 1;
+
+
+

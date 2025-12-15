@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Giỏ hàng</title>
     <link rel="stylesheet" href="../css/cart.css" />
+    <link rel="stylesheet" href="../css/home.css"/>
+    <link rel="stylesheet" href="../css/search.css" />
   </head>
   <body>
     <!-- HEADER -->
@@ -14,15 +16,13 @@
       <div class="header-right">
         <button id="loginBtn">Đăng nhập</button>
         <button id="registerBtn">Đăng ký</button>
-
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+          <button id="searchBtn">Tìm</button>
+        </div>
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
           <span id="userName">User</span>
-          <div class="dropdown" id="dropdownMenu">
-            <a href="/html/profile.html">Thông tin cá nhân</a>
-            <a href="/html/orders.html">Đơn hàng</a>
-            <a id="logoutBtn">Đăng xuất</a>
-          </div>
         </div>
 
         <div class="cart-icon" id="cartBtn">
@@ -42,7 +42,7 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="footer">
+    <footer class="footer" id="footer-contact">
       <div class="container footer-content">
         <div class="footer-col">
           <h3>Về chúng tôi</h3>

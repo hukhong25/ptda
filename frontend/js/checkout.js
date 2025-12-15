@@ -9,11 +9,74 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Điền sẵn thông tin user
+    // Điền sẵn thông tin user (Tên, SĐT từ localStorage)
     if (user) {
         document.getElementById("tenNguoiNhan").value = user.ten || "";
         document.getElementById("sdt").value = user.sdt || "";
     }
+
+    // ==================================================================
+    // [MỚI] 1. THÊM ĐOẠN CODE NÀY ĐỂ TẢI ĐỊA CHỈ VÀ CHỌN MẶC ĐỊNH
+    // ==================================================================
+    async function loadUserAddresses() {
+        const addressSelect = document.getElementById("diaChiGiaoHang");
+        
+        // Kiểm tra xem bên HTML bạn đã đổi input thành select chưa
+        if (!addressSelect || addressSelect.tagName !== 'SELECT') {
+            console.warn("Lưu ý: Bạn cần đổi thẻ <input> id='diaChiGiaoHang' thành <select> bên file HTML thì code này mới chạy đúng.");
+            return;
+        }
+
+        try {
+            const res = await fetch("http://localhost:3000/api/users/profile", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            // Cập nhật SĐT mới nhất từ database (nếu có)
+            if (data.phone) {
+                document.getElementById("sdt").value = data.phone;
+            }
+
+            if (res.ok && data.addresses && data.addresses.length > 0) {
+                // Xóa option cũ, tạo option đầu tiên
+                addressSelect.innerHTML = '<option value="">-- Chọn địa chỉ giao hàng --</option>';
+                
+                let hasDefault = false;
+
+                data.addresses.forEach(addr => {
+                    const option = document.createElement("option");
+                    option.value = addr.tenDiaChi; // Giá trị gửi đi
+                    option.text = addr.tenDiaChi;  // Chữ hiển thị
+                    
+                    // Logic: Nếu là địa chỉ mặc định (macDinh == 1) thì tự chọn
+                    if (addr.macDinh === 1) {
+                        option.selected = true;
+                        option.text += " (Mặc định)"; // Thêm chữ cho dễ nhìn
+                        hasDefault = true;
+                    }
+                    
+                    addressSelect.appendChild(option);
+                });
+
+                // Nếu không có cái nào mặc định, tự chọn cái đầu tiên (sau dòng "Chọn địa chỉ")
+                if (!hasDefault && addressSelect.options.length > 1) {
+                    addressSelect.selectedIndex = 1; 
+                }
+
+            } else {
+                addressSelect.innerHTML = '<option value="">Bạn chưa lưu địa chỉ nào</option>';
+            }
+        } catch (err) {
+            console.error("Lỗi tải địa chỉ:", err);
+            addressSelect.innerHTML = '<option value="">Lỗi kết nối server</option>';
+        }
+    }
+
+    // Gọi hàm chạy ngay lập tức
+    loadUserAddresses();
+    // ==================================================================
+
 
     const orderItemsList = document.getElementById("orderItemsList");
     const finalTotalEl = document.getElementById("finalTotal");
@@ -21,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const qrInfo = document.getElementById("qrInfo");
     let totalAmount = 0;
 
-    // --- 1. Hiển thị danh sách sản phẩm ---
+    // --- Hiển thị danh sách sản phẩm (Giữ nguyên) ---
     orderItemsList.innerHTML = "";
     checkoutItems.forEach(item => {
         const itemTotal = item.gia * item.soLuongMua;
@@ -40,12 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     finalTotalEl.innerText = totalAmount.toLocaleString() + " VND";
 
-    // --- 2. Xử lý logic hiển thị QR Code ---
+    // --- Xử lý logic hiển thị QR Code (Giữ nguyên) ---
     ptttSelect.addEventListener("change", (e) => {
         if (e.target.value === "2") {
-            // Nếu chọn Chuyển khoản ngân hàng (value = 2)
             qrInfo.style.display = "block";
-            // Cập nhật nội dung chuyển khoản gợi ý
             const ten = document.getElementById("tenNguoiNhan").value;
             const sdt = document.getElementById("sdt").value;
             document.getElementById("qrNote").innerText = `Thanh toan don hang ${sdt}`;
@@ -54,21 +115,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- 3. Hàm Validate (Kiểm tra dữ liệu) ---
+    // --- Hàm Validate (SỬA LẠI) ---
     function validateForm(ten, sdt, diaChi) {
         let isValid = true;
 
-        // Reset thông báo lỗi
         document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
 
-        // Validate Tên: Không được để trống
+        // Validate Tên
         if (!ten || ten.trim() === "") {
             document.getElementById("error-ten").style.display = "block";
             isValid = false;
         }
 
-        // Validate SĐT: Chỉ chứa ký tự số
-        // Regex: ^[0-9]+$ nghĩa là từ đầu đến cuối chỉ có các số từ 0-9
+        // Validate SĐT
         const phoneRegex = /^[0-9]+$/;
         if (!sdt || !phoneRegex.test(sdt)) {
             document.getElementById("error-sdt").innerText = "Số điện thoại không được để trống và chỉ chứa số";
@@ -80,28 +139,21 @@ document.addEventListener("DOMContentLoaded", () => {
              isValid = false;
         }
 
-        // Validate Địa chỉ: Không để trống & Không chứa ký tự đặc biệt
-        // Regex cho phép: Chữ cái (kể cả tiếng Việt), số, khoảng trắng, và dấu phẩy, chấm, gạch ngang, xược (thường dùng trong địa chỉ)
-        // Loại bỏ các ký tự đặc biệt như @, #, $, %, ^, &, *, (, ), !, v.v.
-        // \p{L} là unicode property cho chữ cái bất kỳ ngôn ngữ nào
-        // [0-9] là số
-        // [\s,.\-\/] là khoảng trắng, phẩy, chấm, gạch ngang, gạch chéo
-        const addressRegex = /^[a-zA-Z0-9\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ,.\-\/]+$/;
-
+        // ==================================================================
+        // [SỬA] 2. SỬA VALIDATE ĐỊA CHỈ (Bỏ Regex, chỉ check rỗng)
+        // ==================================================================
         if (!diaChi || diaChi.trim() === "") {
-            document.getElementById("error-diachi").innerText = "Địa chỉ không được để trống";
-            document.getElementById("error-diachi").style.display = "block";
-            isValid = false;
-        } else if (!addressRegex.test(diaChi)) {
-            document.getElementById("error-diachi").innerText = "Địa chỉ không được chứa ký tự đặc biệt (@, #, $, %...)";
+            document.getElementById("error-diachi").innerText = "Vui lòng chọn địa chỉ giao hàng";
             document.getElementById("error-diachi").style.display = "block";
             isValid = false;
         }
+        // Đã xóa phần regex check ký tự đặc biệt vì người dùng chọn từ dropdown
+        // ==================================================================
 
         return isValid;
     }
 
-    // --- 4. Xử lý nút Đặt Hàng ---
+    // --- Xử lý nút Đặt Hàng (Giữ nguyên logic) ---
     document.getElementById("btnPlaceOrder").addEventListener("click", async () => {
         const tenNguoiNhan = document.getElementById("tenNguoiNhan").value;
         const sdt = document.getElementById("sdt").value;
@@ -109,9 +161,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const maPTTT = document.getElementById("maPTTT").value;
         const ghiChu = document.getElementById("ghiChu").value;
 
-        // Gọi hàm validate trước khi gửi
         if (!validateForm(tenNguoiNhan, sdt, diaChiGiaoHang)) {
-            return; // Dừng lại nếu dữ liệu không hợp lệ
+            return; 
         }
 
         const payload = {

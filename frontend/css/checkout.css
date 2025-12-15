@@ -1,0 +1,61 @@
+.checkout-container { display: flex; gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+.checkout-form { flex: 1; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+.checkout-summary { width: 350px; background: #f9f9f9; padding: 20px; border-radius: 8px; height: fit-content; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;}
+.order-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; }
+.btn-confirm { width: 100%; background: #28a745; color: white; padding: 15px; border: none; cursor: pointer; font-size: 16px; margin-top: 20px; }
+.btn-confirm:hover { background: #218838; }
+
+/* CSS cho phần QR Code */
+#qrInfo {
+    display: none; /* Mặc định ẩn */
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px dashed #28a745;
+    background: #e9f7ef;
+    border-radius: 5px;
+}
+#qrInfo img {
+    max-width: 200px;
+    margin-bottom: 10px;
+}
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: none;
+}
+/* Container cho link để căn phải */
+.address-link-container {
+    margin-top: 10px;
+    text-align: right;
+}
+
+/* Style mặc định cho link */
+.address-manage-link {
+    color: #ee4d2d; /* Màu cam chủ đạo */
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 12px; /* Thêm padding để khi hover có không gian */
+    border: 1px solid transparent; /* Viền trong suốt mặc định để tránh nhảy layout khi hover */
+    border-radius: 4px; /* Bo góc nhẹ */
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
+    display: inline-block; /* Để nhận padding và border */
+}
+
+/* Icon bên trong link */
+.address-manage-link i {
+    margin-right: -1px;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.address-manage-link:hover {
+    background-color: #ee4d2d; /* Nền màu cam */
+    color: white; /* Chữ màu trắng */
+    border-color: #ee4d2d; /* Viền màu cam */
+    text-decoration: none; /* Đảm bảo không có gạch chân */
+    box-shadow: 0 2px 5px rgba(238, 77, 45, 0.3); /* Thêm chút bóng đổ cho đẹp */
+}

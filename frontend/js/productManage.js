@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const p of products) {
       const pCats = await fetchData(`products/${p.maSP}/categories`);
       const catNames = (pCats.categories || []).map(c => catMap[c.maDanhMuc] || c.maDanhMuc);
-      
       const catDisplay = catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
       const imgSrc = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
 
@@ -68,11 +67,17 @@ document.addEventListener("DOMContentLoaded", () => {
   window.editProduct = async function(id) {
     console.log("Đang sửa sản phẩm:", id);
     editingProductId = id;
-
     // 1. Lấy dữ liệu sản phẩm từ Backend
     const data = await fetchData(`products/${id}`);
     if (!data.product) return alert("Lỗi tải sản phẩm");
     const p = data.product;
+
+      document.getElementById("modalTitle").innerText = "Sửa sản phẩm";
+      document.getElementById("productName").value = p.tenSP;
+      document.getElementById("productPrice").value = p.gia;
+      document.getElementById("productDesc").value = p.moTa;
+      //document.getElementById("productStock").value = p.soLuong || 0;
+
 
     const title = document.getElementById("modalTitle");
     if(title) title.innerText = "Sửa sản phẩm";
