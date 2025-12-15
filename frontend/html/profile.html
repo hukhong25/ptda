@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thông tin cá nhân</title>
-    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/home.css" />
     <link rel="stylesheet" href="../css/search.css" />
-    <link rel="stylesheet" href="../css/profile.css"> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="../css/profile.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <header class="header">
       <div class="logo" id="logo">MyShop</div>
 
@@ -18,9 +22,9 @@
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
           <button id="searchBtn">Tìm</button>
-        <div class="user-menu" id="userMenu">
-          <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
-          <span id="userName">User</span>
+          <div class="user-menu" id="userMenu">
+            <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
+            <span id="userName">User</span>
           </div>
         </div>
         <div class="cart-icon" id="cartBtn">
@@ -30,98 +34,146 @@
     </header>
 
     <div class="profile-container">
-        <div class="profile-sidebar">
-            <div class="user-avatar">
-                <i class="fa-solid fa-user-circle"></i>
-                <h3 id="sidebar-username">User Name</h3>
+      <div class="profile-sidebar">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user-circle"></i>
+          <h3 id="sidebar-username">User Name</h3>
+        </div>
+        <ul class="profile-menu">
+          <li class="active" onclick="switchTab('info')">
+            <i class="fa-solid fa-id-card"></i> Thông tin tài khoản
+          </li>
+          <li onclick="switchTab('orders')">
+            <i class="fa-solid fa-box-open"></i> Đơn hàng của tôi
+          </li>
+          <li onclick="logout()">
+            <i class="fa-solid fa-sign-out-alt"></i> Đăng xuất
+          </li>
+        </ul>
+      </div>
+
+      <div class="profile-content">
+        <div id="tab-info" class="tab-content active">
+          <h2>Hồ sơ của tôi</h2>
+          <hr />
+          <div class="profile-layout" style="display: flex; gap: 30px">
+            <div style="flex: 1">
+              <h3>Thông tin chung</h3>
+              <form id="profile-form">
+                <div class="form-group">
+                  <label>Tên đăng nhập:</label>
+                  <input type="text" id="username" />
+                </div>
+                <div class="form-group">
+                  <label>Email:</label>
+                  <input
+                    type="email"
+                    id="email"
+                    disabled
+                    style="background: #eee"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Số điện thoại:</label>
+                  <input type="text" id="phone" />
+                </div>
+                <button
+                  type="button"
+                  id="update-btn"
+                  class="btn btn-primary"
+                  style="
+                    margin-top: 10px;
+                    width: 100%;
+                    padding: 10px;
+                    background: #ee4d2d;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                  "
+                >
+                  Cập nhật thông tin
+                </button>
+              </form>
             </div>
-            <ul class="profile-menu">
-                <li class="active" onclick="switchTab('info')"><i class="fa-solid fa-id-card"></i> Thông tin tài khoản</li>
-                <li onclick="switchTab('orders')"><i class="fa-solid fa-box-open"></i> Đơn hàng của tôi</li>
-                <li onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</li>
-            </ul>
+
+            <div
+              style="flex: 1; border-left: 1px solid #ddd; padding-left: 30px"
+            >
+              <h3>Sổ địa chỉ</h3>
+
+              <ul
+                id="address-list"
+                style="list-style: none; padding: 0; margin-bottom: 20px"
+              ></ul>
+
+              <div
+                class="add-address-box"
+                style="background: #f9f9f9; padding: 15px; border-radius: 5px"
+              >
+                <h4>Thêm địa chỉ mới</h4>
+                <div style="display: flex; gap: 10px">
+                  <input
+                    type="text"
+                    id="new-address"
+                    placeholder="Nhập địa chỉ mới..."
+                    style="flex: 1; padding: 8px"
+                  />
+                  <button
+                    onclick="addNewAddress()"
+                    style="
+                      padding: 8px 15px;
+                      background: #28a745;
+                      color: white;
+                      border: none;
+                      cursor: pointer;
+                    "
+                  >
+                    Thêm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="profile-content">
-            <div id="tab-info" class="tab-content active">
-                <h2>Hồ sơ của tôi</h2>
-                <hr>
-                <div class="profile-layout" style="display: flex; gap: 30px;">
-                    
-                    <div style="flex: 1;">
-                        <h3>Thông tin chung</h3>
-                        <form id="profile-form">
-                            <div class="form-group">
-                                <label>Tên đăng nhập:</label>
-                                <input type="text" id="username">
-                            </div>
-                            <div class="form-group">
-                                <label>Email:</label>
-                                <input type="email" id="email" disabled style="background: #eee;">
-                            </div>
-                            <div class="form-group">
-                                <label>Số điện thoại:</label>
-                                <input type="text" id="phone">
-                            </div>
-                            <button type="button" id="update-btn" class="btn btn-primary" style="margin-top:10px; width: 100%; padding: 10px; background: #ee4d2d; color: white; border: none; cursor: pointer;">Cập nhật thông tin</button>
-                        </form>
-                    </div>
-
-                    <div style="flex: 1; border-left: 1px solid #ddd; padding-left: 30px;">
-                        <h3>Sổ địa chỉ</h3>
-                        
-                        <ul id="address-list" style="list-style: none; padding: 0; margin-bottom: 20px;">
-                            </ul>
-
-                        <div class="add-address-box" style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
-                            <h4>Thêm địa chỉ mới</h4>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="new-address" placeholder="Nhập địa chỉ mới..." style="flex: 1; padding: 8px;">
-                                <button onclick="addNewAddress()" style="padding: 8px 15px; background: #28a745; color: white; border: none; cursor: pointer;">Thêm</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="tab-orders" class="tab-content" style="display: none;">
-                <h2>Đơn hàng đã đặt</h2>
-                <div class="order-list" id="order-list">
-                    <p>Đang tải đơn hàng...</p>
-                </div>
-            </div>
+        <div id="tab-orders" class="tab-content" style="display: none">
+          <h2>Đơn hàng đã đặt</h2>
+          <div class="order-list" id="order-list">
+            <p>Đang tải đơn hàng...</p>
+          </div>
         </div>
+      </div>
     </div>
     <!-- HTML: Footer -->
-<footer class="site-footer">
-  <div class="footer-container">
-    <!-- Thông tin cửa hàng -->
-    <div class="footer-section">
-      <h3>Thông Tin Cửa Hàng</h3>
-      <p>Shop Thời Trang Cao Trường Thịnh</p>
-      <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
-      <p>Email: info@shopthoitrang.com</p>
-      <p>Điện thoại: 0909 123 456</p>
-    </div>
+    <footer class="site-footer">
+      <div class="footer-container">
+        <!-- Thông tin cửa hàng -->
+        <div class="footer-section">
+          <h3>Thông Tin Cửa Hàng</h3>
+          <p>Shop Thời Trang CHKT</p>
+          <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
+          <p>Email: info@shopthoitrang.com</p>
+          <p>Điện thoại: 0909 123 456</p>
+        </div>
 
-    <!-- Liên hệ nhanh -->
-    <div class="footer-section">
-      <h3>Liên Hệ</h3>
-      <ul>
-        <li><a href="mailto:info@shopthoitrang.com">Gửi email</a></li>
-        <li><a href="tel:0909123456">Gọi ngay</a></li>
-        <li><a href="#">Fanpage Facebook</a></li>
-        <li><a href="#">Instagram</a></li>
-      </ul>
-    </div>
-  </div>
+        <!-- Liên hệ nhanh -->
+        <div class="footer-section">
+          <h3>Liên Hệ</h3>
+          <ul>
+            <li><a href="mailto:info@shopthoitrang.com">Gửi email</a></li>
+            <li><a href="tel:0909123456">Gọi ngay</a></li>
+            <li><a href="#">Fanpage Facebook</a></li>
+            <li><a href="#">Instagram</a></li>
+          </ul>
+        </div>
+      </div>
 
-  <div class="footer-bottom">
-    <p>&copy; 2025 Shop Thời Trang. All rights reserved.</p>
-  </div>
-</footer>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Shop Thời Trang. All rights reserved.</p>
+      </div>
+    </footer>
 
     <script src="../js/Header.js"></script>
     <script src="../js/profile.js"></script>
-</body>
+  </body>
 </html>
