@@ -13,10 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Render List ---
+  // --- Render List (Giữ nguyên) ---
   async function renderProducts() {
-    // ... (Giữ nguyên logic render cũ của bạn ở đây) ...
-    // Code render cũ của bạn khá ổn, chỉ cần copy lại vào đây
     const data = await fetchData("products");
     const products = data.products || [];
     const tbody = document.querySelector("#productTable tbody");
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const catNames = (pCats.categories || []).map(c => catMap[c.maDanhMuc] || c.maDanhMuc);
       
       const catDisplay = catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
-      const quantityDisplay = `<span style="color:red; font-weight:bold; margin-left:10px;">(SL: ${p.tongSoLuong})</span>`;
       const imgSrc = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
 
       const tr = document.createElement("tr");
@@ -46,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${p.maSP}</td>
         <td>${p.tenSP}</td>
         <td>${Number(p.gia).toLocaleString()}</td>
-        <td>${catDisplay} ${quantityDisplay}</td>
+        <td>${catDisplay}</td>
         <td><img src="${imgSrc}" width="50"></td>
         <td>
           <button class="edit-btn" data-id="${p.maSP}">Sửa</button>
@@ -62,61 +59,49 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => deleteProduct(btn.dataset.id)));
   }
 
-  // --- Add/Edit Form Logic ---
+  // --- Logic Form ---
   const form = document.getElementById("productForm");
   const modal = document.getElementById("productModal");
-  
-  // SỬA: Chọn đúng ID nút close
   const closeBtn = document.getElementById("closeProductModal"); 
 
-
-
- // Hàm Sửa (Đã thêm kiểm tra null để tránh lỗi)
-window.editProduct = async function(id) {
+  // === HÀM SỬA (Logic hiển thị Size từ DB lên Form) ===
+  window.editProduct = async function(id) {
     console.log("Đang sửa sản phẩm:", id);
     editingProductId = id;
 
-    // Gọi API lấy chi tiết sản phẩm
+    // 1. Lấy dữ liệu sản phẩm từ Backend
     const data = await fetchData(`products/${id}`);
     if (!data.product) return alert("Lỗi tải sản phẩm");
     const p = data.product;
 
-    // Cập nhật tiêu đề Modal
     const title = document.getElementById("modalTitle");
     if(title) title.innerText = "Sửa sản phẩm";
 
-    // --- ĐIỀN DỮ LIỆU VÀO FORM (CÓ KIỂM TRA) ---
-    
-    // Tên sản phẩm
+    // 2. Điền thông tin cơ bản
     const nameInput = document.getElementById("productName");
     if (nameInput) nameInput.value = p.tenSP || "";
 
-    // Giá sản phẩm
     const priceInput = document.getElementById("productPrice");
     if (priceInput) priceInput.value = p.gia || 0;
 
-    // Mô tả
     const descInput = document.getElementById("productDesc");
     if (descInput) descInput.value = p.moTa || "";
 
-    // Số lượng (Đây là chỗ gây lỗi cũ nếu thiếu thẻ input)
-    const stockInput = document.getElementById("productStock");
-    if (stockInput) {
-        stockInput.value = p.soLuong || 0;
-    }
-
-    // --- XỬ LÝ CHECKBOX SIZE ---
-    // Reset toàn bộ size trước
+    // 3. --- XỬ LÝ CHECKBOX SIZE (QUAN TRỌNG) ---
+    // Reset: Bỏ chọn hết các ô checkbox trước khi điền mới
     document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
-    // Tích chọn size đã có
+
+    // Điền: Backend trả về p.sizes là mảng tên (ví dụ: ["S", "M"])
     if (p.sizes && Array.isArray(p.sizes)) {
-        p.sizes.forEach(s => {
-            const cb = document.querySelector(`input[name="productSize"][value="${s}"]`);
+        p.sizes.forEach(sizeName => {
+            // Tìm ô input có value trùng với tên size (ví dụ value="S") và tích chọn nó
+            // Lưu ý: Trong HTML, value của checkbox phải là "S", "M", "L"...
+            const cb = document.querySelector(`input[name="productSize"][value="${sizeName}"]`);
             if (cb) cb.checked = true;
         });
     }
 
-    // --- XỬ LÝ ẢNH ---
+    // 4. Xử lý Ảnh
     const imgDiv = document.getElementById("currentImage");
     if (imgDiv) {
         if (p.anhSP) {
@@ -128,15 +113,14 @@ window.editProduct = async function(id) {
         }
     }
 
-    // --- XỬ LÝ DANH MỤC ---
+    // 5. Xử lý Danh mục
     const pCatData = await fetchData(`products/${id}/categories`);
     const selectedIds = (pCatData.categories || []).map(c => c.maDanhMuc);
     loadCategories(selectedIds);
 
-    // HIỆN MODAL
-    const modal = document.getElementById("productModal");
+    // Hiện Modal
     if (modal) modal.style.display = "block";
-};
+  };
 
 
   // Hàm Xóa (Giữ nguyên)
@@ -153,35 +137,39 @@ window.editProduct = async function(id) {
       } catch(e) { console.error(e); }
   };
 
-  // --- SUBMIT FORM (QUAN TRỌNG) ---
- 
+  // === SUBMIT FORM (Logic gửi Size về Backend) ===
+  const btnSave = document.getElementById("btnSaveProduct");
 
-const btnSave = document.getElementById("btnSaveProduct");
-
-if (btnSave) {
+  if (btnSave) {
     btnSave.addEventListener("click", async () => {
-        // 1. Tự kiểm tra dữ liệu bắt buộc (Validation)
+        // Validation
         const form = document.getElementById("productForm");
         if (!form.checkValidity()) {
-            form.reportValidity(); // Hiển thị thông báo lỗi của trình duyệt nếu thiếu dữ liệu
-            return; // Dừng lại, không gửi
+            form.reportValidity();
+            return;
         }
 
-        // 2. Lấy dữ liệu (Code cũ giữ nguyên logic này)
+        // Gom dữ liệu vào FormData
         const formData = new FormData();
         formData.append("tenSP", document.getElementById("productName").value);
         formData.append("gia", document.getElementById("productPrice").value);
         formData.append("moTa", document.getElementById("productDesc").value);
-        formData.append("soLuong", 0); // Hoặc lấy từ input nếu có
+        // Mặc định số lượng là 0 như ý bạn
+        formData.append("soLuong", 0); 
 
         // Lấy Categories
         const cats = [];
         document.querySelectorAll("#productCategoriesContainer input:checked").forEach(cb => cats.push(cb.value));
         formData.append("categories", JSON.stringify(cats));
 
-        // Lấy Size
+        // --- XỬ LÝ LẤY SIZE ĐỂ GỬI ĐI (QUAN TRỌNG) ---
         const sizes = [];
-        document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => sizes.push(cb.value));
+        // Lấy tất cả checkbox size ĐANG ĐƯỢC CHỌN
+        document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => {
+            // cb.value ở đây chính là "S", "M", "L"... từ HTML
+            sizes.push(cb.value); 
+        });
+        // Chuyển mảng ["S", "M"] thành chuỗi JSON để gửi cho Backend
         formData.append("sizes", JSON.stringify(sizes));
 
         // Lấy Ảnh
@@ -192,7 +180,7 @@ if (btnSave) {
             if (old) formData.append("oldImage", old);
         }
 
-        // 3. Gửi API
+        // Gửi API
         const url = editingProductId 
             ? `http://localhost:3000/api/products/${editingProductId}` 
             : "http://localhost:3000/api/products";
@@ -201,14 +189,14 @@ if (btnSave) {
         try {
             const res = await fetch(url, {
                 method: method,
-                headers: { Authorization: `Bearer ${token}` }, // Bỏ Content-Type vì FormData tự lo
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData
             });
 
             if (res.ok) {
                 alert("Thành công!");
                 document.getElementById("productModal").style.display = "none";
-                renderProducts(); // Tải lại danh sách
+                renderProducts(); // Tải lại danh sách để cập nhật
             } else {
                 const d = await res.json();
                 alert(d.message || "Có lỗi xảy ra");
@@ -218,7 +206,7 @@ if (btnSave) {
             alert("Lỗi kết nối server");
         }
     });
-}
+  }
 
   // Helper functions
   async function loadCategories(selectedIds = []) {
@@ -227,7 +215,7 @@ if (btnSave) {
       container.innerHTML = "";
       (data.categories || []).forEach(c => {
           const div = document.createElement("div");
-          div.className = "checkbox-wrapper"; // Dùng class css đã có
+          div.className = "checkbox-wrapper";
           div.innerHTML = `
             <input type="checkbox" id="cat_${c.maDanhMuc}" value="${c.maDanhMuc}" 
               ${selectedIds.includes(c.maDanhMuc) ? "checked" : ""}>
@@ -237,7 +225,7 @@ if (btnSave) {
       });
   }
 
-  // Nút Thêm sản phẩm
+  // Nút Thêm sản phẩm (Reset form)
   const addBtn = document.getElementById("addProductBtn");
   if(addBtn) addBtn.onclick = () => {
       editingProductId = null;
@@ -245,21 +233,20 @@ if (btnSave) {
       document.getElementById("currentImage").style.display = "none";
       document.getElementById("modalTitle").innerText = "Thêm sản phẩm";
       
-      // Reset checkboxes size
+      // Reset checkbox size khi thêm mới (bỏ chọn hết)
       document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
       
       loadCategories([]);
       modal.style.display = "block";
   };
 
-  // Nút Đóng Modal (Đã sửa selector ở trên)
+  // Nút Đóng Modal
   if(closeBtn) {
       closeBtn.onclick = () => {
           modal.style.display = "none";
       }
   }
 
-  // Click ngoài biên để đóng
   window.addEventListener("click", (e) => {
       if (e.target === modal) {
           modal.style.display = "none";
@@ -267,13 +254,11 @@ if (btnSave) {
   });
 
   // Init
-  // Kiểm tra xem tab hiện tại có phải products không để render
   const activeTab = localStorage.getItem("activeTab");
   if (activeTab === 'products') {
       renderProducts();
   }
   
-  // Lắng nghe sự kiện click vào tab Products để render lại (vì userManage chỉ show div)
   const productTabBtn = document.querySelector('li[data-tab="products"]');
   if(productTabBtn) {
       productTabBtn.addEventListener('click', () => {
