@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thanh Toán</title>
-    <link rel="stylesheet" href="../css/home.css">
-    <link rel="stylesheet" href="../css/cart.css">
-    <link rel="stylesheet" href="../css/checkout.css">
+    <link rel="stylesheet" href="../css/home.css" />
+    <link rel="stylesheet" href="../css/cart.css" />
+    <link rel="stylesheet" href="../css/checkout.css" />
     <link rel="stylesheet" href="../css/search.css" />
-</head>
-<body>
+  </head>
+  <body>
     <!-- HEADER -->
     <header class="header">
       <div class="logo" id="logo">MyShop</div>
@@ -18,8 +18,8 @@
         <button id="loginBtn">Đăng nhập</button>
         <button id="registerBtn">Đăng ký</button>
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
-            <button id="searchBtn">Tìm</button>
+          <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+          <button id="searchBtn">Tìm</button>
         </div>
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
@@ -38,67 +38,111 @@
     </header>
 
     <div class="checkout-container">
-        <div class="checkout-form">
-            <h2>Thông tin giao hàng</h2>
-            <form id="orderForm">
-                <div class="form-group">
-                    <label>Họ tên người nhận <span style="color:red">*</span></label>
-                    <input type="text" id="tenNguoiNhan" placeholder="Nguyễn Văn A">
-                    <span class="error-message" id="error-ten">Vui lòng nhập họ tên</span>
-                </div>
-                <div class="form-group">
-                    <label>Số điện thoại <span style="color:red">*</span></label>
-                    <input type="text" id="sdt" placeholder="0912345678">
-                    <span class="error-message" id="error-sdt">Số điện thoại chỉ được chứa số</span>
-                </div>
-                <div class="form-group">
-                    <label>Địa chỉ giao hàng <span style="color:red">*</span></label>
-                    <input type="text" id="diaChiGiaoHang" placeholder="Số nhà, Tên đường, Quận/Huyện...">
-                    <span class="error-message" id="error-diachi">Địa chỉ không được chứa ký tự đặc biệt</span>
-                </div>
-                <div class="form-group">
-                    <label>Phương thức thanh toán</label>
-                    <select id="maPTTT">
-                        <option value="1">Thanh toán khi nhận hàng (COD)</option>
-                        <option value="2">Chuyển khoản ngân hàng</option>
-                    </select>
-                    
-                    <div id="qrInfo">
-                        <p>Quét mã để thanh toán:</p>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ThanhToanDonHang" alt="QR Code Ngân Hàng">
-                        <p><strong>Nội dung:</strong> <span id="qrNote">Tên KH + SĐT</span></p>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Ghi chú</label>
-                    <textarea id="ghiChu" rows="3" placeholder="Lời nhắn cho shop..."></textarea>
-                </div>
-            </form>
+      <div class="checkout-form">
+        <h2>Thông tin giao hàng</h2>
+        <form id="orderForm">
+          <div class="form-group">
+            <label>Họ tên người nhận <span style="color: red">*</span></label>
+            <input type="text" id="tenNguoiNhan" placeholder="Nguyễn Văn A" />
+            <span class="error-message" id="error-ten"
+              >Vui lòng nhập họ tên</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại <span style="color: red">*</span></label>
+            <input type="text" id="sdt" placeholder="0912345678" />
+            <span class="error-message" id="error-sdt"
+              >Số điện thoại chỉ được chứa số</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Địa chỉ giao hàng <span style="color: red">*</span></label>
+            <input
+              type="text"
+              id="diaChiGiaoHang"
+              placeholder="Số nhà, Tên đường, Quận/Huyện..."
+            />
+            <span class="error-message" id="error-diachi"
+              >Địa chỉ không được chứa ký tự đặc biệt</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Phương thức thanh toán</label>
+            <select id="maPTTT">
+              <option value="1">Thanh toán khi nhận hàng (COD)</option>
+              <option value="2">Chuyển khoản ngân hàng</option>
+            </select>
+
+            <div id="qrInfo">
+              <p>Quét mã để thanh toán:</p>
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ThanhToanDonHang"
+                alt="QR Code Ngân Hàng"
+              />
+              <p>
+                <strong>Nội dung:</strong> <span id="qrNote">Tên KH + SĐT</span>
+              </p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Ghi chú</label>
+            <textarea
+              id="ghiChu"
+              rows="3"
+              placeholder="Lời nhắn cho shop..."
+            ></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="checkout-summary">
+        <h2>Đơn hàng của bạn</h2>
+        <div id="orderItemsList"></div>
+        <hr />
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-top: 10px;
+          "
+        >
+          <span>Tổng tiền:</span>
+          <span id="finalTotal">0 VND</span>
+        </div>
+        <button class="btn-confirm" id="btnPlaceOrder">ĐẶT HÀNG</button>
+      </div>
+    </div>
+    <!-- HTML: Footer -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <!-- Thông tin cửa hàng -->
+        <div class="footer-section">
+          <h3>Thông Tin Cửa Hàng</h3>
+          <p>Shop Thời Trang Cao Trường Thịnh</p>
+          <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
+          <p>Email: info@shopthoitrang.com</p>
+          <p>Điện thoại: 0909 123 456</p>
         </div>
 
-        <div class="checkout-summary">
-            <h2>Đơn hàng của bạn</h2>
-            <div id="orderItemsList"></div>
-            <hr>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
-                <span>Tổng tiền:</span>
-                <span id="finalTotal">0 VND</span>
-            </div>
-            <button class="btn-confirm" id="btnPlaceOrder">ĐẶT HÀNG</button>
-        </div>
-    </div>
-    <footer class="footer" id="footer-contact">
-      <div class="container footer-content">
-        <div class="footer-col">
-          <h3>Về chúng tôi</h3>
-          <p>Chuyên cung cấp quần áo thời trang chất lượng cao cho giới trẻ.</p>
-        </div>
-        <div class="copyright">
-          <p>&copy; 2025 FashionStore. All rights reserved.</p>
+        <!-- Liên hệ nhanh -->
+        <div class="footer-section">
+          <h3>Liên Hệ</h3>
+          <ul>
+            <li><a href="mailto:info@shopthoitrang.com">Gửi email</a></li>
+            <li><a href="tel:0909123456">Gọi ngay</a></li>
+            <li><a href="#">Fanpage Facebook</a></li>
+            <li><a href="#">Instagram</a></li>
+          </ul>
         </div>
       </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 Shop Thời Trang. All rights reserved.</p>
+      </div>
     </footer>
+
     <script src="../js/Header.js"></script>
     <script src="../js/checkout.js"></script>
-</body>
+  </body>
 </html>
