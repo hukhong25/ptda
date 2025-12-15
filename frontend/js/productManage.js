@@ -36,9 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const p of products) {
       const pCats = await fetchData(`products/${p.maSP}/categories`);
       const catNames = (pCats.categories || []).map(c => catMap[c.maDanhMuc] || c.maDanhMuc);
-      
       const catDisplay = catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
-      const quantityDisplay = `<span style="color:red; font-weight:bold; margin-left:10px;">(SL: ${p.tongSoLuong})</span>`;
       const imgSrc = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
 
       const tr = document.createElement("tr");
@@ -46,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${p.maSP}</td>
         <td>${p.tenSP}</td>
         <td>${Number(p.gia).toLocaleString()}</td>
-        <td>${catDisplay} ${quantityDisplay}</td>
+        <td>${catDisplay}</td>
         <td><img src="${imgSrc}" width="50"></td>
         <td>
           <button class="edit-btn" data-id="${p.maSP}">Sửa</button>
@@ -80,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("productName").value = p.tenSP;
       document.getElementById("productPrice").value = p.gia;
       document.getElementById("productDesc").value = p.moTa;
-      document.getElementById("productStock").value = p.soLuong || 0;
+      //document.getElementById("productStock").value = p.soLuong || 0;
 
       // Xử lý Size: Reset trước
       document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
@@ -133,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
           formData.append("tenSP", document.getElementById("productName").value);
           formData.append("gia", document.getElementById("productPrice").value);
           formData.append("moTa", document.getElementById("productDesc").value);
-          formData.append("soLuong", document.getElementById("productStock").value);
+          //formData.append("soLuong", document.getElementById("productStock").value);
 
           // Lấy Categories
           const cats = [];
