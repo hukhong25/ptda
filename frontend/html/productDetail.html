@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="../css/home.css" />
     <link rel="stylesheet" href="../css/productDetail.css" />
+    <link rel="stylesheet" href="../css/search.css" />
   </head>
   <body>
     <!-- HEADER -->
@@ -23,11 +25,6 @@
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
           <span id="userName">User</span>
-          <div class="dropdown" id="dropdownMenu">
-            <a href="/html/profile.html">Thông tin cá nhân</a>
-            <a href="/html/orders.html">Đơn hàng</a>
-            <a id="logoutBtn">Đăng xuất</a>
-          </div>
         </div>
 
         <div class="cart-icon" id="cartBtn">
@@ -46,12 +43,14 @@
           <h2 id="productName">Tên sản phẩm</h2>
           <p class="price" id="productPrice">0 VND</p>
           <div id="productDesc">Mô tả sản phẩm</div>
-          <div class="size-selection" style="margin-bottom: 20px;">
-              <label>Chọn Size:</label>
-              <div id="sizeContainer" class="sizes-grid"></div>
-              <p id="stockInfo" style="margin-top: 10px; color: black;">Số lượng:</p>
+          <div class="size-selection" style="margin-bottom: 20px">
+            <label>Chọn Size:</label>
+            <div id="sizeContainer" class="sizes-grid"></div>
+            <p id="stockInfo" style="margin-top: 10px; color: black">
+              Số lượng:
+            </p>
           </div>
-          
+
           <div class="quantity-control">
             <button id="btnMinus">-</button>
             <input type="number" id="quantity" value="1" min="1" />
@@ -66,15 +65,32 @@
       </div>
     </main>
 
-    <footer class="footer">
-      <div class="container footer-content">
-        <div class="footer-col">
-          <h3>Về chúng tôi</h3>
-          <p>Chuyên cung cấp quần áo thời trang chất lượng cao cho giới trẻ.</p>
+    <!-- HTML: Footer -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <!-- Thông tin cửa hàng -->
+        <div class="footer-section">
+          <h3>Thông Tin Cửa Hàng</h3>
+          <p>Shop Thời Trang Cao Trường Thịnh</p>
+          <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
+          <p>Email: info@shopthoitrang.com</p>
+          <p>Điện thoại: 0909 123 456</p>
         </div>
-        <div class="copyright">
-          <p>&copy; 2025 FashionStore. All rights reserved.</p>
+
+        <!-- Liên hệ nhanh -->
+        <div class="footer-section">
+          <h3>Liên Hệ</h3>
+          <ul>
+            <li><a href="mailto:info@shopthoitrang.com">Gửi email</a></li>
+            <li><a href="tel:0909123456">Gọi ngay</a></li>
+            <li><a href="#">Fanpage Facebook</a></li>
+            <li><a href="#">Instagram</a></li>
+          </ul>
         </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 Shop Thời Trang. All rights reserved.</p>
       </div>
     </footer>
 

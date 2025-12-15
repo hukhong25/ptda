@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thông tin cá nhân</title>
     <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/search.css" />
     <link rel="stylesheet" href="../css/profile.css"> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -14,17 +15,14 @@
       <div class="header-right">
         <button id="loginBtn">Đăng nhập</button>
         <button id="registerBtn">Đăng ký</button>
-
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Tìm sản phẩm..." />
+          <button id="searchBtn">Tìm</button>
         <div class="user-menu" id="userMenu">
           <img id="userAvatar" class="avatar" src="/Asset/user.jpg" />
           <span id="userName">User</span>
-          <div class="dropdown" id="dropdownMenu">
-            <a href="/html/profile.html">Thông tin cá nhân</a>
-            <a href="/html/orders.html">Đơn hàng</a>
-            <a id="logoutBtn">Đăng xuất</a>
           </div>
         </div>
-
         <div class="cart-icon" id="cartBtn">
           🛒 <span id="cartCount">0</span>
         </div>
@@ -94,6 +92,34 @@
             </div>
         </div>
     </div>
+    <!-- HTML: Footer -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <!-- Thông tin cửa hàng -->
+    <div class="footer-section">
+      <h3>Thông Tin Cửa Hàng</h3>
+      <p>Shop Thời Trang Cao Trường Thịnh</p>
+      <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
+      <p>Email: info@shopthoitrang.com</p>
+      <p>Điện thoại: 0909 123 456</p>
+    </div>
+
+    <!-- Liên hệ nhanh -->
+    <div class="footer-section">
+      <h3>Liên Hệ</h3>
+      <ul>
+        <li><a href="mailto:info@shopthoitrang.com">Gửi email</a></li>
+        <li><a href="tel:0909123456">Gọi ngay</a></li>
+        <li><a href="#">Fanpage Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2025 Shop Thời Trang. All rights reserved.</p>
+  </div>
+</footer>
 
     <script src="../js/Header.js"></script>
     <script src="../js/profile.js"></script>

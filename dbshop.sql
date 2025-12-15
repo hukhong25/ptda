@@ -145,3 +145,11 @@ INSERT INTO Size (tenSize) VALUES
 ('L'), 
 ('XL'), 
 ('2XL');
+INSERT INTO danhMuc (tenDanhMuc) VALUES 
+('Áo sơ mi'), 
+('Áo phông'), 
+('Áo thun'), 
+('Áo khoác'), 
+('Quần ngố bò'), 
+('Quần jean'), 
+('Quần âu');
