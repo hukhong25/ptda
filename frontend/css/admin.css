@@ -148,7 +148,6 @@ button.delete-btn:hover {
   background: #d32f2f;
 }
 
-
 /* ==========================
    MODAL - SỬA LẠI
 ========================== */
@@ -174,7 +173,7 @@ button.delete-btn:hover {
   position: relative;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   animation: slideDown 0.3s ease;
-  
+
   /* --- PHẦN QUAN TRỌNG ĐỂ SCROLL --- */
   max-height: 85vh; /* Chiều cao tối đa bằng 85% màn hình */
   overflow-y: auto; /* Nếu dài hơn thì hiện thanh cuộn */
@@ -215,8 +214,6 @@ button.delete-btn:hover {
 }
 
 /*--- phần sửa model*/
-
-
 
 @keyframes slideDown {
   from {
@@ -288,4 +285,47 @@ button.delete-btn:hover {
 #productCategoriesContainer .checkbox-wrapper label {
   word-break: break-word;
   margin: 0; /* bỏ margin mặc định */
+}
+
+/* Container size */
+#productSizeContainer {
+  display: flex;
+  flex-wrap: wrap; /* Cho phép xuống dòng nếu quá dài */
+  gap: 10px; /* Khoảng cách giữa các size */
+  padding: 5px 0;
+}
+
+/* Mỗi ô size */
+#productSizeContainer .checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0; /* Màu nền nhạt */
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Khi hover */
+#productSizeContainer .checkbox-wrapper:hover {
+  background-color: #e0e0e0;
+}
+
+/* Checkbox ẩn, chỉ hiển thị label */
+#productSizeContainer .checkbox-wrapper input[type="checkbox"] {
+  margin-right: 5px;
+  accent-color: #007bff; /* Màu xanh khi tick */
+}
+
+/* Label */
+#productSizeContainer .checkbox-wrapper label {
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Checkbox ticked */
+#productSizeContainer .checkbox-wrapper input[type="checkbox"]:checked + label {
+  color: #007bff;
+  font-weight: 600;
 }

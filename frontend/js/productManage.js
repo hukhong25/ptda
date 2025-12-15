@@ -9,14 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       return await res.json();
     } catch (err) {
+      console.error("Fetch error:", err);
       return { error: true };
     }
   }
 
-  // --- Render List ---
+  // ================= Render danh sách sản phẩm =================
   async function renderProducts() {
-    // ... (Giữ nguyên logic render cũ của bạn ở đây) ...
-    // Code render cũ của bạn khá ổn, chỉ cần copy lại vào đây
     const data = await fetchData("products");
     const products = data.products || [];
     const tbody = document.querySelector("#productTable tbody");
@@ -31,12 +30,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const catData = await fetchData("categories");
     const categories = catData.categories || [];
     const catMap = {};
-    categories.forEach(c => catMap[c.maDanhMuc] = c.tenDanhMuc);
+    categories.forEach((c) => (catMap[c.maDanhMuc] = c.tenDanhMuc));
 
     for (const p of products) {
       const pCats = await fetchData(`products/${p.maSP}/categories`);
-      const catNames = (pCats.categories || []).map(c => catMap[c.maDanhMuc] || c.maDanhMuc);
-      const catDisplay = catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
+      const catNames = (pCats.categories || []).map(
+        (c) => catMap[c.maDanhMuc] || c.maDanhMuc
+      );
+      const catDisplay =
+        catNames.length > 0 ? catNames.join(", ") : "Chưa phân loại";
       const imgSrc = p.anhSP ? `/Asset/${p.anhSP}` : "/Asset/no-image.jpg";
 
       const tr = document.createElement("tr");
@@ -54,184 +56,209 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     }
 
-    document.querySelectorAll(".edit-btn").forEach(btn => 
-        btn.addEventListener("click", () => editProduct(btn.dataset.id)));
-    document.querySelectorAll(".delete-btn").forEach(btn => 
-        btn.addEventListener("click", () => deleteProduct(btn.dataset.id)));
+    // Gán sự kiện sửa/xóa
+    document
+      .querySelectorAll(".edit-btn")
+      .forEach((btn) =>
+        btn.addEventListener("click", () => editProduct(btn.dataset.id))
+      );
+    document
+      .querySelectorAll(".delete-btn")
+      .forEach((btn) =>
+        btn.addEventListener("click", () => deleteProduct(btn.dataset.id))
+      );
   }
 
-  // --- Add/Edit Form Logic ---
+  // ================= Hàm load categories =================
+  async function loadCategories(selectedIds = []) {
+    const data = await fetchData("categories");
+    const container = document.getElementById("productCategoriesContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    (data.categories || []).forEach((c) => {
+      const div = document.createElement("div");
+      div.className = "checkbox-wrapper";
+      div.innerHTML = `
+        <input type="checkbox" id="cat_${c.maDanhMuc}" value="${c.maDanhMuc}"
+          ${selectedIds.includes(c.maDanhMuc) ? "checked" : ""}>
+        <label for="cat_${c.maDanhMuc}">${c.tenDanhMuc}</label>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ================= Hàm load sizes =================
+  async function loadSizes(selectedSizes = []) {
+    const container = document.getElementById("productSizeContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    try {
+      const res = await fetch("http://localhost:3000/api/sizes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      const sizes = data.sizes || [];
+
+      sizes.forEach((s) => {
+        const sId = s.maSize.toString();
+        const div = document.createElement("div");
+        div.className = "checkbox-wrapper";
+        div.innerHTML = `
+          <input type="checkbox"
+            name="productSize"
+            id="size_${sId}"
+            value="${sId}"
+            ${selectedSizes.includes(sId) ? "checked" : ""}>
+          <label for="size_${sId}">${s.tenSize}</label>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      console.error("Lỗi lấy size:", err);
+    }
+  }
+
+  // ================= Thêm / Sửa sản phẩm =================
   const form = document.getElementById("productForm");
   const modal = document.getElementById("productModal");
-  
-  // SỬA: Chọn đúng ID nút close
-  const closeBtn = document.getElementById("closeProductModal"); 
+  const closeBtn = document.getElementById("closeProductModal");
 
-  // Hàm Sửa
-  window.editProduct = async function(id) {
-      editingProductId = id;
-      const data = await fetchData(`products/${id}`);
-      if(!data.product) return alert("Lỗi tải sản phẩm");
-      const p = data.product;
+  window.editProduct = async function (id) {
+    editingProductId = id;
+    const data = await fetchData(`products/${id}`);
+    if (!data.product) return alert("Lỗi tải sản phẩm");
+    const p = data.product;
 
-      document.getElementById("modalTitle").innerText = "Sửa sản phẩm";
-      document.getElementById("productName").value = p.tenSP;
-      document.getElementById("productPrice").value = p.gia;
-      document.getElementById("productDesc").value = p.moTa;
-      //document.getElementById("productStock").value = p.soLuong || 0;
+    document.getElementById("modalTitle").innerText = "Sửa sản phẩm";
+    document.getElementById("productName").value = p.tenSP;
+    document.getElementById("productPrice").value = p.gia;
+    document.getElementById("productDesc").value = p.moTa;
 
-      // Xử lý Size: Reset trước
-      document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
-      // Nếu sản phẩm có dữ liệu size trả về (giả sử backend trả về mảng sizes)
-      if (p.sizes && Array.isArray(p.sizes)) {
-         p.sizes.forEach(s => {
-             const cb = document.querySelector(`input[name="productSize"][value="${s}"]`);
-             if(cb) cb.checked = true;
-         });
-      }
+    // Lấy size đã có
+    const sizeData = await fetchData(`products/${id}/sizes`);
+    const selectedSizes = (sizeData.sizes || []).map((s) =>
+      s.maSize.toString()
+    );
+    await loadSizes(selectedSizes); // quan trọng phải await
 
-      // Ảnh cũ
-      const imgDiv = document.getElementById("currentImage");
-      if(p.anhSP) {
-          imgDiv.innerHTML = `<img src="/Asset/${p.anhSP}" width="80">`;
-          imgDiv.dataset.oldimage = p.anhSP;
-          imgDiv.style.display = "block";
-      } else {
-          imgDiv.style.display = "none";
-      }
+    // Ảnh cũ
+    const imgDiv = document.getElementById("currentImage");
+    if (p.anhSP) {
+      imgDiv.innerHTML = `<img src="/Asset/${p.anhSP}" width="80">`;
+      imgDiv.dataset.oldimage = p.anhSP;
+      imgDiv.style.display = "block";
+    } else imgDiv.style.display = "none";
 
-      // Load categories
-      const pCatData = await fetchData(`products/${id}/categories`);
-      const selectedIds = (pCatData.categories || []).map(c => c.maDanhMuc);
-      loadCategories(selectedIds);
+    // Load categories
+    const pCatData = await fetchData(`products/${id}/categories`);
+    const selectedIds = (pCatData.categories || []).map((c) => c.maDanhMuc);
+    loadCategories(selectedIds);
 
-      modal.style.display = "block";
+    modal.style.display = "block";
   };
 
-  // Hàm Xóa (Giữ nguyên)
-  window.deleteProduct = async function(id) {
-      if(!confirm("Chắc chắn xóa?")) return;
-      try {
-          const res = await fetch(`http://localhost:3000/api/products/${id}`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` }
-          });
-          const d = await res.json();
-          if(res.ok) { alert("Đã xóa"); renderProducts(); }
-          else alert(d.message);
-      } catch(e) { console.error(e); }
+  // ================= Xóa sản phẩm =================
+  window.deleteProduct = async function (id) {
+    if (!confirm("Chắc chắn xóa?")) return;
+    try {
+      const res = await fetch(`http://localhost:3000/api/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = await res.json();
+      if (res.ok) {
+        alert("Đã xóa");
+        renderProducts();
+      } else alert(d.message);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  // --- SUBMIT FORM (QUAN TRỌNG) ---
+  // ================= Submit form =================
   if (form) {
-      form.addEventListener("submit", async (e) => {
-          e.preventDefault(); // Ngăn chặn reload trang mặc định
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("tenSP", document.getElementById("productName").value);
+      formData.append("gia", document.getElementById("productPrice").value);
+      formData.append("moTa", document.getElementById("productDesc").value);
 
-          const formData = new FormData();
-          formData.append("tenSP", document.getElementById("productName").value);
-          formData.append("gia", document.getElementById("productPrice").value);
-          formData.append("moTa", document.getElementById("productDesc").value);
-          //formData.append("soLuong", document.getElementById("productStock").value);
+      // Categories
+      const cats = [];
+      document
+        .querySelectorAll("#productCategoriesContainer input:checked")
+        .forEach((cb) => cats.push(cb.value));
+      formData.append("categories", JSON.stringify(cats));
 
-          // Lấy Categories
-          const cats = [];
-          document.querySelectorAll("#productCategoriesContainer input:checked").forEach(cb => cats.push(cb.value));
-          formData.append("categories", JSON.stringify(cats));
+      // Sizes
+      const sizes = [];
+      document
+        .querySelectorAll('input[name="productSize"]:checked')
+        .forEach((cb) =>
+          sizes.push({ maSize: parseInt(cb.value), soLuongTon: 0 })
+        );
+      formData.append("sizes", JSON.stringify(sizes));
 
-          // SỬA: Lấy dữ liệu Size
-          const sizes = [];
-          document.querySelectorAll('input[name="productSize"]:checked').forEach(cb => sizes.push(cb.value));
-          formData.append("sizes", JSON.stringify(sizes)); // Gửi lên backend dưới dạng JSON string
+      // Ảnh
+      const file = document.getElementById("productImage").files[0];
+      if (file) formData.append("anhSP", file);
+      if (editingProductId) {
+        const old = document.getElementById("currentImage")?.dataset.oldimage;
+        if (old) formData.append("oldImage", old);
+      }
 
-          const file = document.getElementById("productImage").files[0];
-          if(file) formData.append("anhSP", file);
-          if(editingProductId) {
-              const old = document.getElementById("currentImage")?.dataset.oldimage;
-              if(old) formData.append("oldImage", old);
-          }
+      const url = editingProductId
+        ? `http://localhost:3000/api/products/${editingProductId}`
+        : "http://localhost:3000/api/products";
+      const method = editingProductId ? "PUT" : "POST";
 
-          const url = editingProductId ? `http://localhost:3000/api/products/${editingProductId}` : "http://localhost:3000/api/products";
-          const method = editingProductId ? "PUT" : "POST";
-
-          try {
-              const res = await fetch(url, {
-                  method: method,
-                  headers: { Authorization: `Bearer ${token}` },
-                  body: formData
-              });
-              
-              if(res.ok) {
-                  alert("Thành công!");
-                  modal.style.display = "none";
-                  renderProducts();
-                  // Lưu ý: Code này KHÔNG có dòng location.reload() nên sẽ không tải lại trang.
-                  // Nếu trang vẫn tải lại, hãy kiểm tra xem có file JS nào khác can thiệp không.
-              } else {
-                  const d = await res.json();
-                  alert(d.message || "Có lỗi xảy ra");
-              }
-          } catch(err) { console.error(err); alert("Lỗi kết nối"); }
-      });
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        if (res.ok) {
+          alert("Thành công!");
+          modal.style.display = "none";
+          renderProducts();
+        } else {
+          const d = await res.json();
+          alert(d.message || "Có lỗi xảy ra");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Lỗi kết nối");
+      }
+    });
   }
 
-  // Helper functions
-  async function loadCategories(selectedIds = []) {
-      const data = await fetchData("categories");
-      const container = document.getElementById("productCategoriesContainer");
-      container.innerHTML = "";
-      (data.categories || []).forEach(c => {
-          const div = document.createElement("div");
-          div.className = "checkbox-wrapper"; // Dùng class css đã có
-          div.innerHTML = `
-            <input type="checkbox" id="cat_${c.maDanhMuc}" value="${c.maDanhMuc}" 
-              ${selectedIds.includes(c.maDanhMuc) ? "checked" : ""}>
-            <label for="cat_${c.maDanhMuc}">${c.tenDanhMuc}</label>
-          `;
-          container.appendChild(div);
-      });
-  }
-
-  // Nút Thêm sản phẩm
+  // ================= Thêm sản phẩm =================
   const addBtn = document.getElementById("addProductBtn");
-  if(addBtn) addBtn.onclick = () => {
+  if (addBtn)
+    addBtn.onclick = () => {
       editingProductId = null;
       form.reset();
       document.getElementById("currentImage").style.display = "none";
       document.getElementById("modalTitle").innerText = "Thêm sản phẩm";
-      
-      // Reset checkboxes size
-      document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
-      
+      loadSizes([]);
       loadCategories([]);
       modal.style.display = "block";
-  };
+    };
 
-  // Nút Đóng Modal (Đã sửa selector ở trên)
-  if(closeBtn) {
-      closeBtn.onclick = () => {
-          modal.style.display = "none";
-      }
-  }
-
-  // Click ngoài biên để đóng
+  // ================= Đóng modal =================
+  if (closeBtn) closeBtn.onclick = () => (modal.style.display = "none");
   window.addEventListener("click", (e) => {
-      if (e.target === modal) {
-          modal.style.display = "none";
-      }
+    if (e.target === modal) modal.style.display = "none";
   });
 
-  // Init
-  // Kiểm tra xem tab hiện tại có phải products không để render
+  // ================= Init =================
   const activeTab = localStorage.getItem("activeTab");
-  if (activeTab === 'products') {
-      renderProducts();
-  }
-  
-  // Lắng nghe sự kiện click vào tab Products để render lại (vì userManage chỉ show div)
+  if (activeTab === "products") renderProducts();
   const productTabBtn = document.querySelector('li[data-tab="products"]');
-  if(productTabBtn) {
-      productTabBtn.addEventListener('click', () => {
-          renderProducts();
-      });
-  }
+  if (productTabBtn)
+    productTabBtn.addEventListener("click", () => renderProducts());
 });

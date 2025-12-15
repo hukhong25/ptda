@@ -8,18 +8,19 @@ import khoRoutes from "./routes/kho.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import sizeRoutes from "./routes/size.routes.js";
+import productSizeRoutes from "./routes/productSize.routes.js";
 import cors from "cors";
 
 const app = express();
 
-app.use(cors({
-  origin: [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5500", "http://127.0.0.1:5500"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 const __dirname = path.resolve();
@@ -32,6 +33,8 @@ app.use("/api/kho", khoRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/sizes", sizeRoutes);
+app.use("/api/products", productSizeRoutes);
 // ------------------ STATIC FRONTEND ------------------
 app.use("/Asset", express.static(path.join(__dirname, "../frontend/Asset")));
 app.use(express.static(path.join(__dirname, "../frontend")));
