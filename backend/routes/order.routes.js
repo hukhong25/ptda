@@ -18,3 +18,14 @@ router.get('/all', verifyToken, getAllOrders);
 // PUT /api/orders/:orderId/status - Cập nhật trạng thái đơn hàng (admin)
 router.put('/:id/status', verifyToken, updateOrderStatus);
 export default router;
+import express from "express";
+import { createMomoPayment } from "../controllers/momo.controller.js"; // Nhớ import
+
+const router = express.Router();
+
+// ... các route cũ giữ nguyên
+
+// Thêm route mới này
+router.post("/momo", createMomoPayment);
+
+export default router;
