@@ -1,7 +1,5 @@
 import db from "../config/db.js";
 
-
-
 const Product = {
   getAll: (callback) => {
     const sql = `
@@ -101,7 +99,59 @@ const Product = {
   removeAllSizes: (maSP, callback) => {
     const sql = "DELETE FROM ChiTietSanPham WHERE maSP = ?";
     db.query(sql, [maSP], callback);
-  }
+  },
+
+  // === THÊM HÀM MỚI: ĐỒNG BỘ SIZE (Sync) ===
+  syncSizes: (maSP, listTenSize, callback) => {
+    // Trường hợp 1: Nếu danh sách gửi lên Rỗng -> Xóa hết size của SP này
+    if (!listTenSize || listTenSize.length === 0) {
+        const sql = "DELETE FROM ChiTietSanPham WHERE maSP = ?";
+        return db.query(sql, [maSP], callback);
+    }
+
+    // Trường hợp 2: Có danh sách size
+    // Bước A: Xóa những size KHÔNG nằm trong danh sách được tích (Bỏ tích)
+    // Cú pháp: DELETE bảng_phụ FROM bảng_phụ JOIN ... WHERE ... NOT IN (...)
+    const sqlDelete = `
+        DELETE ct 
+        FROM ChiTietSanPham ct 
+        JOIN Size s ON ct.maSize = s.maSize 
+        WHERE ct.maSP = ? AND s.tenSize NOT IN (?)
+    `;
+
+    db.query(sqlDelete, [maSP, listTenSize], (err) => {
+        if (err) return callback(err);
+
+        // Bước B: Thêm mới hoặc Giữ nguyên size được tích
+        // Dùng vòng lặp để xử lý từng size
+        // Logic SQL: INSERT ... ON DUPLICATE KEY UPDATE ...
+        // Nếu chưa có -> Insert (số lượng 0). Nếu có rồi -> Giữ nguyên (Update maSP=maSP để không đổi gì cả)
+        
+        const sqlUpsert = `
+            INSERT INTO ChiTietSanPham (maSP, maSize, soLuongTon) 
+            SELECT ?, maSize, 0 
+            FROM Size WHERE tenSize = ? 
+            ON DUPLICATE KEY UPDATE maSP = VALUES(maSP)
+        `; 
+        // Note: UPDATE maSP = VALUES(maSP) là mẹo của MySQL để báo rằng "Đã tồn tại thì đừng làm gì cả, giữ nguyên dữ liệu cũ"
+
+        let completed = 0;
+        let hasError = false;
+
+        listTenSize.forEach(tenSize => {
+            db.query(sqlUpsert, [maSP, tenSize], (err) => {
+                if (hasError) return;
+                if (err) { hasError = true; return callback(err); }
+                
+                completed++;
+                if (completed === listTenSize.length) {
+                    callback(null, { message: "Sync complete" });
+                }
+            });
+        });
+    });
+  },
+  
 };
 
 export default Product;

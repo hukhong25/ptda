@@ -3,8 +3,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
   let selectedSizeId = null;
-  let currentStock = 0; // BIẾN MỚI: Lưu trữ số lượng tồn của size đang chọn
+  let currentStock = 0;
   
+  // --- BIẾN MỚI: Lưu toàn bộ thông tin sản phẩm để dùng cho nút Mua Ngay ---
+  let currentProductData = null; 
+
   if (!productId) {
       alert("Không tìm thấy ID sản phẩm");
       window.location.href = "/html/index.html";
@@ -21,8 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addToCartBtn = document.getElementById("addToCartBtn");
   const buyNowBtn = document.getElementById("buyNowBtn");
   const sizeContainer = document.getElementById("sizeContainer");
-  const stockInfo = document.getElementById("stockInfo"); // BIẾN MỚI: Element hiển thị kho
-  
+  const stockInfo = document.getElementById("stockInfo");
+
   let user = JSON.parse(localStorage.getItem("user"));
   let token = localStorage.getItem("token");
 
@@ -34,6 +37,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       const data = await res.json();
       const p = data.product;
+      
+      // --- SỬA: Lưu dữ liệu ra biến toàn cục ---
+      currentProductData = p; 
+      // ----------------------------------------
 
       // Render thông tin
       productName.innerText = p.tenSP;
@@ -43,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           productImage.src = `/Asset/${p.anhSP}`;
       }
 
-      // RENDER SIZE
+      // RENDER SIZE (Giữ nguyên logic cũ của bạn)
       sizeContainer.innerHTML = "";
       if (p.sizes && Array.isArray(p.sizes) && p.sizes.length > 0) {
         p.sizes.forEach(s => {
@@ -55,7 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             btn.style.cursor = "pointer";
             btn.style.border = "1px solid #ccc";
             
-            // Check tồn kho
             if (s.soLuongTon <= 0) {
                 btn.classList.add("disabled");
                 btn.disabled = true;
@@ -64,28 +70,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             btn.addEventListener("click", () => {
-                // Xóa active cũ
                 document.querySelectorAll(".size-btn").forEach(b => {
                     b.classList.remove("active");
                     b.style.backgroundColor = "";
                     b.style.color = "";
                 });
-                // Active mới
                 btn.classList.add("active");
                 btn.style.backgroundColor = "#333";
                 btn.style.color = "#fff";
                 
-                // CẬP NHẬT LOGIC CHỌN SIZE
                 selectedSizeId = s.maSize;
-                currentStock = s.soLuongTon; // Lưu số lượng tồn hiện tại
+                currentStock = s.soLuongTon;
                 
-                // Hiển thị ra màn hình
                 if(stockInfo) {
                     stockInfo.innerText = `Số lượng: ${currentStock} sản phẩm`;
-                    stockInfo.style.color = currentStock < 5 ? "black" : "#555"; // Báo đỏ nếu sắp hết
+                    stockInfo.style.color = currentStock < 5 ? "black" : "#555";
                 }
-
-                // Reset input số lượng về 1 khi đổi size để tránh lỗi logic cũ
                 if(qtyInput) qtyInput.value = 1;
             });
             sizeContainer.appendChild(btn);
@@ -183,9 +183,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
   }
 
-  // ---------------- BUY NOW ----------------
+// ---------------- BUY NOW (ĐÃ SỬA) ----------------
   if(buyNowBtn) {
       buyNowBtn.addEventListener("click", () => {
+        // Kiểm tra đăng nhập trước (nếu cần thiết)
+        user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+            alert("Bạn cần đăng nhập để mua hàng!");
+            window.location.href = "/html/login.html";
+            return;
+        }
+
         if (!selectedSizeId) {
             alert("Vui lòng chọn Size!");
             return;
@@ -193,16 +201,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         const qty = parseInt(qtyInput.value);
 
-        // KIỂM TRA SỐ LƯỢNG TRƯỚC KHI MUA
         if (qty > currentStock) {
             alert(`Sản phẩm này chỉ còn ${currentStock} cái trong kho. Vui lòng giảm số lượng!`);
             return;
         }
 
-        localStorage.setItem(
-          "buyNow",
-          JSON.stringify({ id: productId, quantity: qty, maSize: selectedSizeId })
-        );
+        // --- SỬA LOGIC Ở ĐÂY ---
+        // 1. Tìm tên size dựa trên ID đã chọn
+        const selectedSizeObj = currentProductData.sizes.find(s => s.maSize === selectedSizeId);
+        const sizeName = selectedSizeObj ? selectedSizeObj.tenSize : "N/A";
+
+        // 2. Tạo đối tượng item đầy đủ thông tin (giống như lấy từ giỏ hàng)
+        const buyNowItem = {
+            maSP: currentProductData.maSP,
+            tenSP: currentProductData.tenSP,
+            gia: currentProductData.gia,
+            anhSP: currentProductData.anhSP,
+            maSize: selectedSizeId,
+            tenSize: sizeName,  // Cần thêm tên size để hiển thị bên checkout
+            soLuongMua: qty
+        };
+
+        // 3. Lưu vào checkoutItems (thay vì "buyNow") để checkout.js đọc được
+        localStorage.setItem("checkoutItems", JSON.stringify([buyNowItem]));
+
+        // 4. Chuyển hướng
         window.location.href = "/html/checkout.html";
       });
   }

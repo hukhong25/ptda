@@ -115,27 +115,35 @@ export const createProduct = (req, res) => {
   });
 };
 
-// ====================== CẬP NHẬT SẢN PHẨM (ĐÃ SỬA) ===========================
+// ====================== CẬP NHẬT SẢN PHẨM (ĐÃ SỬA LỖI) ===========================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  // Lấy thêm sizes
   const { tenSP, gia, moTa, categories, oldImage, soLuong, sizes } = req.body;
 
+  // 1. Validation cơ bản
   if (!tenSP || !gia) {
     return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
   }
 
-  let anhSP = oldImage;
+  // 2. --- KHAI BÁO BIẾN anhSP (QUAN TRỌNG: SỬA LỖI TẠI ĐÂY) ---
+  let anhSP = oldImage; // Mặc định lấy ảnh cũ
+
+  // 3. Nếu có file ảnh mới được upload lên
   if (req.file) {
-    anhSP = req.file.filename;
+    anhSP = req.file.filename; // Cập nhật tên ảnh mới
+
+    // Xóa ảnh cũ (nếu có và không phải là null/undefined)
     if (oldImage && oldImage !== "null" && oldImage !== "undefined") {
       try {
         const oldPath = path.join(process.cwd(), "../frontend/Asset", oldImage);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      } catch (err) { console.error("Không xóa được ảnh cũ:", err.message); }
+      } catch (err) {
+        console.error("Không xóa được ảnh cũ:", err.message);
+      }
     }
   }
 
+  // 4. Tạo đối tượng update (Lúc này biến anhSP đã tồn tại nên không bị lỗi nữa)
   const updatedProduct = { tenSP, gia: parseInt(gia), moTa: moTa || "", anhSP };
 
   Product.update(id, updatedProduct, (err, result) => {
@@ -146,29 +154,17 @@ export const updateProduct = (req, res) => {
 
     const stockQty = parseInt(soLuong) || 0;
 
-    // --- PHẦN SỬA ĐỔI QUAN TRỌNG: UPDATE SIZE ---
+    // --- XỬ LÝ SYNC SIZES (Giữ nguyên logic bạn đã sửa trước đó) ---
     if (sizes) {
         let sizeArray = [];
         try { sizeArray = JSON.parse(sizes); } catch (e) {}
 
-        // 1. Xóa hết size cũ của SP này trong bảng ChiTietSanPham
-        Product.removeAllSizes(id, (err) => {
-            if (!err) {
-                 // 2. Thêm lại size mới user vừa chọn
-                 if (Array.isArray(sizeArray) && sizeArray.length > 0) {
-                    Product.addSizeByName(id, sizeArray, stockQty, (err) => {
-                        if(err) console.error("Lỗi thêm lại size mới:", err);
-                    });
-                 }
-            }
-        });
-    } else {
-        // Nếu không gửi size (hoặc gửi rỗng), có thể logic của bạn là giữ nguyên
-        // hoặc cập nhật lại số lượng tồn kho cho các size hiện có
-        Product.updateInventory(id, stockQty, (err) => {
-             if(err) console.error("Lỗi update kho:", err);
-        });
-    }
+        if (Array.isArray(sizeArray)) {
+            Product.syncSizes(id, sizeArray, (err) => {
+                 if(err) console.error("Lỗi đồng bộ size:", err);
+            });
+        }
+    } 
     // -----------------------------------------------
 
     if (categories) {
@@ -184,6 +180,7 @@ export const updateProduct = (req, res) => {
     res.json({ message: "Cập nhật sản phẩm thành công" });
   });
 };
+
 
 // ... (Giữ nguyên deleteProduct) ...
 export const deleteProduct = (req, res) => {
