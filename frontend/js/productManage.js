@@ -63,21 +63,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("productModal");
   const closeBtn = document.getElementById("closeProductModal"); 
 
-  // === HÀM SỬA (Logic hiển thị Size từ DB lên Form) ===
+  // === HÀM SỬA (ĐÃ SỬA LOGIC HIỂN THỊ SIZE) ===
   window.editProduct = async function(id) {
     console.log("Đang sửa sản phẩm:", id);
     editingProductId = id;
+
     // 1. Lấy dữ liệu sản phẩm từ Backend
     const data = await fetchData(`products/${id}`);
     if (!data.product) return alert("Lỗi tải sản phẩm");
     const p = data.product;
-
-      document.getElementById("modalTitle").innerText = "Sửa sản phẩm";
-      document.getElementById("productName").value = p.tenSP;
-      document.getElementById("productPrice").value = p.gia;
-      document.getElementById("productDesc").value = p.moTa;
-      //document.getElementById("productStock").value = p.soLuong || 0;
-
 
     const title = document.getElementById("modalTitle");
     if(title) title.innerText = "Sửa sản phẩm";
@@ -92,19 +86,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const descInput = document.getElementById("productDesc");
     if (descInput) descInput.value = p.moTa || "";
 
-    // 3. --- XỬ LÝ CHECKBOX SIZE (QUAN TRỌNG) ---
-    // Reset: Bỏ chọn hết các ô checkbox trước khi điền mới
+    // 3. --- SỬA ĐOẠN NÀY: XỬ LÝ CHECKBOX SIZE ---
+    
+    // Bước A: Reset (Bỏ chọn hết các ô checkbox trước)
     document.querySelectorAll('input[name="productSize"]').forEach(cb => cb.checked = false);
 
-    // Điền: Backend trả về p.sizes là mảng tên (ví dụ: ["S", "M"])
+    // Bước B: Điền lại các ô đã có
+    // Backend trả về mảng object: [{maSize: 1, tenSize: "S"}, ...]
     if (p.sizes && Array.isArray(p.sizes)) {
-        p.sizes.forEach(sizeName => {
-            // Tìm ô input có value trùng với tên size (ví dụ value="S") và tích chọn nó
-            // Lưu ý: Trong HTML, value của checkbox phải là "S", "M", "L"...
-            const cb = document.querySelector(`input[name="productSize"][value="${sizeName}"]`);
+        p.sizes.forEach(sizeObj => {
+            // LƯU Ý: Phải lấy thuộc tính .tenSize của đối tượng
+            // sizeObj.tenSize sẽ là "S", "M"... khớp với value trong HTML
+            const cb = document.querySelector(`input[name="productSize"][value="${sizeObj.tenSize}"]`);
             if (cb) cb.checked = true;
         });
     }
+    // ---------------------------------------------
 
     // 4. Xử lý Ảnh
     const imgDiv = document.getElementById("currentImage");

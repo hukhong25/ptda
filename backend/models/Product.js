@@ -72,22 +72,28 @@ const Product = {
   },
 
   // 1. Thêm size vào kho dựa trên TÊN SIZE
+ // 1. Thêm size vào kho dựa trên TÊN SIZE (Logic: Tìm ID trước -> Insert sau)
   addSizeByName: (maSP, listTenSize, soLuongTon, callback) => {
     if (!listTenSize || listTenSize.length === 0) {
         return callback(null);
     }
-    const sql = `
-        INSERT INTO ChiTietSanPham (maSP, maSize, soLuongTon) 
-        SELECT ?, maSize, ? 
-        FROM Size 
-        WHERE tenSize IN (?)
-    `;
-    db.query(sql, [maSP, soLuongTon, listTenSize], (err, res) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') return callback(null);
-            return callback(err);
-        }
-        callback(null, res);
+    
+    // Bước 1: Tìm maSize tương ứng với các tên size (VD: ['S', 'M'] -> ra ID 1, 2)
+    const sqlFind = "SELECT maSize, tenSize FROM Size WHERE tenSize IN (?)";
+    
+    db.query(sqlFind, [listTenSize], (err, sizesFound) => {
+        if (err) return callback(err);
+        if (!sizesFound || sizesFound.length === 0) return callback(null);
+
+        // Bước 2: Tạo mảng dữ liệu để Insert nhiều dòng cùng lúc
+        // Format của thư viện mysql: [[maSP, maSize, soLuongTon], [maSP, maSize, soLuongTon]]
+        const values = sizesFound.map(s => [maSP, s.maSize, soLuongTon]);
+        
+        const sqlInsert = "INSERT INTO ChiTietSanPham (maSP, maSize, soLuongTon) VALUES ?";
+        db.query(sqlInsert, [values], (err, res) => {
+            if (err) return callback(err);
+            callback(null, res);
+        });
     });
   },
 
