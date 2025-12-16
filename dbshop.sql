@@ -142,15 +142,17 @@ CREATE TABLE ChiTietDonHang (
     FOREIGN KEY (maSP) REFERENCES SanPham(maSP),
     FOREIGN KEY (maSize) REFERENCES Size(maSize)
 );
-INSERT INTO Size (tenSize) VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL'), ('Freesize');
-
-select * from users;
-select * from diachi;
+INSERT INTO Size (tenSize) VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL');
+INSERT INTO phuongThucThanhToan (tenPTTT) VALUES ('Ví điện tử MoMo');
 ALTER TABLE DiaChi ADD COLUMN macDinh TINYINT(1) DEFAULT 0;
 
 UPDATE users 
 SET role = 'ADMIN' 
 WHERE id = 1;
 
+select * from users;
+select * from diachi;
+select * from chitietsanpham;
+select * from phuongThucThanhToan;
 
 
