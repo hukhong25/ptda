@@ -9,23 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Điền sẵn thông tin user (Tên, SĐT từ localStorage)
+    // Điền sẵn thông tin user
     if (user) {
         document.getElementById("tenNguoiNhan").value = user.ten || "";
         document.getElementById("sdt").value = user.sdt || "";
     }
 
-    // ==================================================================
-    // [MỚI] 1. THÊM ĐOẠN CODE NÀY ĐỂ TẢI ĐỊA CHỈ VÀ CHỌN MẶC ĐỊNH
-    // ==================================================================
+    // --- 1. TẢI ĐỊA CHỈ (Giữ nguyên code của bạn) ---
     async function loadUserAddresses() {
         const addressSelect = document.getElementById("diaChiGiaoHang");
-        
-        // Kiểm tra xem bên HTML bạn đã đổi input thành select chưa
-        if (!addressSelect || addressSelect.tagName !== 'SELECT') {
-            console.warn("Lưu ý: Bạn cần đổi thẻ <input> id='diaChiGiaoHang' thành <select> bên file HTML thì code này mới chạy đúng.");
-            return;
-        }
+        if (!addressSelect || addressSelect.tagName !== 'SELECT') return;
 
         try {
             const res = await fetch("http://localhost:3000/api/users/profile", {
@@ -33,81 +26,58 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data = await res.json();
 
-            // Cập nhật SĐT mới nhất từ database (nếu có)
-            if (data.phone) {
-                document.getElementById("sdt").value = data.phone;
-            }
+            if (data.phone) document.getElementById("sdt").value = data.phone;
 
             if (res.ok && data.addresses && data.addresses.length > 0) {
-                // Xóa option cũ, tạo option đầu tiên
                 addressSelect.innerHTML = '<option value="">-- Chọn địa chỉ giao hàng --</option>';
-                
                 let hasDefault = false;
-
                 data.addresses.forEach(addr => {
                     const option = document.createElement("option");
-                    option.value = addr.tenDiaChi; // Giá trị gửi đi
-                    option.text = addr.tenDiaChi;  // Chữ hiển thị
-                    
-                    // Logic: Nếu là địa chỉ mặc định (macDinh == 1) thì tự chọn
+                    option.value = addr.tenDiaChi;
+                    option.text = addr.tenDiaChi;
                     if (addr.macDinh === 1) {
                         option.selected = true;
-                        option.text += " (Mặc định)"; // Thêm chữ cho dễ nhìn
+                        option.text += " (Mặc định)";
                         hasDefault = true;
                     }
-                    
                     addressSelect.appendChild(option);
                 });
-
-                // Nếu không có cái nào mặc định, tự chọn cái đầu tiên (sau dòng "Chọn địa chỉ")
-                if (!hasDefault && addressSelect.options.length > 1) {
-                    addressSelect.selectedIndex = 1; 
-                }
-
+                if (!hasDefault && addressSelect.options.length > 1) addressSelect.selectedIndex = 1;
             } else {
                 addressSelect.innerHTML = '<option value="">Bạn chưa lưu địa chỉ nào</option>';
             }
         } catch (err) {
             console.error("Lỗi tải địa chỉ:", err);
-            addressSelect.innerHTML = '<option value="">Lỗi kết nối server</option>';
         }
     }
-
-    // Gọi hàm chạy ngay lập tức
     loadUserAddresses();
-    // ==================================================================
 
-
+    // --- 2. HIỂN THỊ SẢN PHẨM & TÍNH TỔNG TIỀN ---
     const orderItemsList = document.getElementById("orderItemsList");
     const finalTotalEl = document.getElementById("finalTotal");
     const ptttSelect = document.getElementById("maPTTT");
     const qrInfo = document.getElementById("qrInfo");
     let totalAmount = 0;
 
-    // --- Hiển thị danh sách sản phẩm (Giữ nguyên) ---
     orderItemsList.innerHTML = "";
     checkoutItems.forEach(item => {
         const itemTotal = item.gia * item.soLuongMua;
         totalAmount += itemTotal;
-
         const div = document.createElement("div");
         div.className = "order-item";
         div.innerHTML = `
-            <div>
-                <strong>${item.tenSP}</strong> <br>
-                <small>Size: ${item.tenSize} x ${item.soLuongMua}</small>
-            </div>
+            <div><strong>${item.tenSP}</strong> <br> <small>Size: ${item.tenSize} x ${item.soLuongMua}</small></div>
             <span>${itemTotal.toLocaleString()} đ</span>
         `;
         orderItemsList.appendChild(div);
     });
     finalTotalEl.innerText = totalAmount.toLocaleString() + " VND";
 
-    // --- Xử lý logic hiển thị QR Code (Giữ nguyên) ---
+    // --- 3. XỬ LÝ QR CODE (Giữ nguyên) ---
     ptttSelect.addEventListener("change", (e) => {
+        // Giả sử ID=2 là Chuyển khoản ngân hàng
         if (e.target.value === "2") {
             qrInfo.style.display = "block";
-            const ten = document.getElementById("tenNguoiNhan").value;
             const sdt = document.getElementById("sdt").value;
             document.getElementById("qrNote").innerText = `Thanh toan don hang ${sdt}`;
         } else {
@@ -115,62 +85,73 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- Hàm Validate (SỬA LẠI) ---
+    // --- 4. VALIDATE FORM (Giữ nguyên) ---
     function validateForm(ten, sdt, diaChi) {
         let isValid = true;
-
         document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-
-        // Validate Tên
         if (!ten || ten.trim() === "") {
-            document.getElementById("error-ten").style.display = "block";
-            isValid = false;
+            document.getElementById("error-ten").style.display = "block"; isValid = false;
         }
-
-        // Validate SĐT
         const phoneRegex = /^[0-9]+$/;
-        if (!sdt || !phoneRegex.test(sdt)) {
-            document.getElementById("error-sdt").innerText = "Số điện thoại không được để trống và chỉ chứa số";
-            document.getElementById("error-sdt").style.display = "block";
-            isValid = false;
-        } else if (sdt.length < 10 || sdt.length > 11) {
-             document.getElementById("error-sdt").innerText = "Số điện thoại phải từ 10-11 số";
-             document.getElementById("error-sdt").style.display = "block";
-             isValid = false;
+        if (!sdt || !phoneRegex.test(sdt) || sdt.length < 10 || sdt.length > 11) {
+            document.getElementById("error-sdt").innerText = "SĐT không hợp lệ (10-11 số)";
+            document.getElementById("error-sdt").style.display = "block"; isValid = false;
         }
-
-        // ==================================================================
-        // [SỬA] 2. SỬA VALIDATE ĐỊA CHỈ (Bỏ Regex, chỉ check rỗng)
-        // ==================================================================
         if (!diaChi || diaChi.trim() === "") {
-            document.getElementById("error-diachi").innerText = "Vui lòng chọn địa chỉ giao hàng";
-            document.getElementById("error-diachi").style.display = "block";
-            isValid = false;
+            document.getElementById("error-diachi").innerText = "Vui lòng chọn địa chỉ";
+            document.getElementById("error-diachi").style.display = "block"; isValid = false;
         }
-        // Đã xóa phần regex check ký tự đặc biệt vì người dùng chọn từ dropdown
-        // ==================================================================
-
         return isValid;
     }
 
-    // --- Xử lý nút Đặt Hàng (Giữ nguyên logic) ---
+    // ==================================================================
+    // [QUAN TRỌNG] 5. XỬ LÝ NÚT ĐẶT HÀNG (ĐÃ TÍCH HỢP MOMO)
+    // ==================================================================
     document.getElementById("btnPlaceOrder").addEventListener("click", async () => {
         const tenNguoiNhan = document.getElementById("tenNguoiNhan").value;
         const sdt = document.getElementById("sdt").value;
         const diaChiGiaoHang = document.getElementById("diaChiGiaoHang").value;
-        const maPTTT = document.getElementById("maPTTT").value;
+        const maPTTT = document.getElementById("maPTTT").value; // Lấy ID phương thức thanh toán
         const ghiChu = document.getElementById("ghiChu").value;
 
-        if (!validateForm(tenNguoiNhan, sdt, diaChiGiaoHang)) {
-            return; 
+        // Validate dữ liệu trước
+        if (!validateForm(tenNguoiNhan, sdt, diaChiGiaoHang)) return;
+
+        // -------------------------------------------------------------
+        // A. NẾU CHỌN MOMO (Giả sử ID của MoMo trong DB là "3")
+        // Bạn cần kiểm tra trong Database xem ID của MoMo là số mấy nhé!
+        // -------------------------------------------------------------
+        if (maPTTT === "3") { 
+            try {
+                // Gọi API backend để lấy link thanh toán MoMo
+                const res = await fetch("http://localhost:3000/api/create-payment-momo", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: totalAmount }) // Gửi tổng tiền lên
+                });
+
+                const data = await res.json();
+
+                if (data && data.payUrl) {
+                    // Lưu tạm thông tin đơn hàng vào localStorage để khi quay lại có thể lưu vào DB sau
+                    // (Hoặc bạn có thể lưu đơn hàng trạng thái 'Pending' trước khi chuyển hướng)
+                    alert("Đang chuyển hướng sang MoMo...");
+                    window.location.href = data.payUrl; // CHUYỂN HƯỚNG SANG TRANG THANH TOÁN
+                } else {
+                    alert("Lỗi tạo giao dịch MoMo: " + (data.message || "Không xác định"));
+                }
+            } catch (err) {
+                console.error("Lỗi MoMo:", err);
+                alert("Không thể kết nối tới cổng thanh toán MoMo");
+            }
+            return; // Dừng lại, không chạy code đặt hàng thường bên dưới
         }
 
+        // -------------------------------------------------------------
+        // B. NẾU CHỌN COD HOẶC CHUYỂN KHOẢN (Logic cũ của bạn)
+        // -------------------------------------------------------------
         const payload = {
-            tenNguoiNhan,
-            sdt,
-            diaChiGiaoHang,
-            maPTTT,
-            ghiChu,
+            tenNguoiNhan, sdt, diaChiGiaoHang, maPTTT, ghiChu,
             tongTien: totalAmount,
             items: checkoutItems
         };
@@ -190,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 alert("Đặt hàng thành công!");
                 localStorage.removeItem("checkoutItems");
-                window.location.href = "/html/index.html"; 
+                window.location.href = "/html/index.html";
             } else {
                 alert(data.message || "Có lỗi xảy ra");
             }

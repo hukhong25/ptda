@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả thanh toán</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+        .container {
+            background: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto;
+            display: none; /* Mặc định ẩn, JS sẽ quyết định hiện cái nào */
+        }
+        .icon-success { color: #28a745; font-size: 80px; }
+        .icon-fail { color: #dc3545; font-size: 80px; }
+        h1 { color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 18px; }
+        .btn {
+            display: inline-block; margin-top: 20px; padding: 10px 20px;
+            color: white; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+        }
+        .btn-success { background-color: #28a745; }
+        .btn-fail { background-color: #dc3545; }
+        .btn-home { background-color: #007bff; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="success-view">
+        <div class="icon-success">✅</div>
+        <h1>Thanh toán thành công!</h1>
+        <p>Cảm ơn bạn đã mua hàng tại MyShop.</p>
+        <p>Đơn hàng của bạn đang được xử lý.</p>
+        <a href="index.html" class="btn btn-success">Tiếp tục mua sắm</a>
+    </div>
+
+    <div class="container" id="fail-view">
+        <div class="icon-fail">❌</div>
+        <h1>Thanh toán thất bại</h1>
+        <p>Giao dịch đã bị hủy hoặc gặp lỗi.</p>
+        <p>Vui lòng thử lại hoặc chọn phương thức khác.</p>
+        <a href="cart.html" class="btn btn-fail">Thử lại</a>
+        <a href="index.html" class="btn btn-home">Về trang chủ</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Lấy tham số từ URL (Do MoMo trả về)
+            const urlParams = new URLSearchParams(window.location.search);
+            const resultCode = urlParams.get('resultCode'); // Quan trọng nhất
+
+            const successView = document.getElementById('success-view');
+            const failView = document.getElementById('fail-view');
+
+            // 2. Kiểm tra resultCode
+            if (resultCode === '0') {
+                // --- TRƯỜNG HỢP THÀNH CÔNG ---
+                successView.style.display = 'block';
+                
+                // Chỉ xóa giỏ hàng khi thực sự thành công
+                localStorage.removeItem("checkoutItems");
+                // localStorage.removeItem("cart"); // Bật dòng này nếu muốn xóa sạch giỏ hàng gốc
+                
+                console.log("Thanh toán MoMo thành công!");
+            } else {
+                // --- TRƯỜNG HỢP HỦY HOẶC LỖI ---
+                failView.style.display = 'block';
+                
+                // KHÔNG xóa giỏ hàng, để người dùng còn mua lại
+                console.log("Giao dịch thất bại hoặc bị hủy. Code:", resultCode);
+            }
+        });
+    </script>
+
+</body>
+</html>
