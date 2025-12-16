@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thanh Toán</title>
     <link rel="stylesheet" href="../css/home.css">
     <link rel="stylesheet" href="../css/cart.css">
@@ -88,16 +88,45 @@
             </form>
         </div>
 
-        <div class="checkout-summary">
-            <h2>Đơn hàng của bạn</h2>
-            <div id="orderItemsList"></div>
-            <hr>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
-                <span>Tổng tiền:</span>
-                <span id="finalTotal">0 VND</span>
+            <div id="qrInfo">
+              <p>Quét mã để thanh toán:</p>
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ThanhToanDonHang"
+                alt="QR Code Ngân Hàng"
+              />
+              <p>
+                <strong>Nội dung:</strong> <span id="qrNote">Tên KH + SĐT</span>
+              </p>
             </div>
-            <button class="btn-confirm" id="btnPlaceOrder">ĐẶT HÀNG</button>
+          </div>
+          <div class="form-group">
+            <label>Ghi chú</label>
+            <textarea
+              id="ghiChu"
+              rows="3"
+              placeholder="Lời nhắn cho shop..."
+            ></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="checkout-summary">
+        <h2>Đơn hàng của bạn</h2>
+        <div id="orderItemsList"></div>
+        <hr />
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-top: 10px;
+          "
+        >
+          <span>Tổng tiền:</span>
+          <span id="finalTotal">0 VND</span>
         </div>
+        <button class="btn-confirm" id="btnPlaceOrder">ĐẶT HÀNG</button>
+      </div>
     </div>
     <footer class="footer" id="footer-contact">
       <div class="container footer-content">
@@ -112,5 +141,5 @@
     </footer>
     <script src="../js/Header.js"></script>
     <script src="../js/checkout.js"></script>
-</body>
+  </body>
 </html>
