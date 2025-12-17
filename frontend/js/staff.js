@@ -179,7 +179,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const statusSelect = `
                     <select onchange="updateStatus(${order.maDonHang}, this.value)" 
                             class="status-select status-${getStatusClass(order.trangThai)}"
-                            ${order.trangThai === 'Đã hủy' ? 'disabled' : ''}>
+                            ${
+                              order.trangThai === "Đã hủy" ||
+                              order.trangThai === "Hoàn thành"
+                                ? "disabled"
+                                : ""
+                            }>
                         <option value="Chờ xác nhận" ${order.trangThai === 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
                         <option value="Đang xử lý" ${order.trangThai === 'Đang xử lý' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="Đang giao" ${order.trangThai === 'Đang giao' ? 'selected' : ''}>Đang giao</option>
@@ -216,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         switch(status) {
             case 'Chờ xác nhận': return 'pending';
             case 'Đang xử lý': return 'processing';
+
             case 'Đang giao': return 'shipping';
             case 'Hoàn thành': return 'completed';
             case 'Đã hủy': return 'cancelled';
